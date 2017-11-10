@@ -1,6 +1,8 @@
-from yambopy import YamboOut,YamboSaveDB,YamboLatticeDB,YamboDipolesDB
-import numpy as np
+""" Python script for processing Yambo data. """
+import os
 import h5py
+import numpy as np
+from yambopy import YamboSaveDB, YamboLatticeDB, YamboDipolesDB
 from ulmic import AtomicUnits
 
 au = AtomicUnits()
@@ -8,41 +10,39 @@ au = AtomicUnits()
 def read_yambo(directory,size=None,out='out.hdf5'):
     """
     directory:  string
-                Parent folder of the SAVE directory  
+                Parent folder of the SAVE directory
     size:       list, array or None
                 If None, attempts to guess the correct size
     out:        string
-                Name of file to which output is written 
+                Name of file to which output is written
     """
 
-    SAVE = directory + '/SAVE/'
-    dipoles_db = directory + '/SAVE/'
+    save_directory = os.path.join(directory,'SAVE','')
 
-    yo = YamboOut(directory)
-    ys = YamboSaveDB(SAVE)
-    yl = YamboLatticeDB(SAVE)
-    yd = YamboDipolesDB(yl,dipoles_db,dip_type='P')
+    yambo_save = YamboSaveDB(save_directory)
+    yambo_lattice = YamboLatticeDB(save_directory)
+    yambo_dipoles = YamboDipolesDB(yambo_lattice,save_directory,dip_type='P')
 
     nn = 1
-    nk = ys.nkpoints
-    nb = ys.nbands
-    spin_factor = int(ys.spin_degen)
-    nv = int(np.rint(ys.electrons/spin_factor))
-    energy = ys.eigenvalues/au.eV
-    klist = ys.kpts_iku
-    lattice = ys.lat
-    reciprocal_lattice = ys.rlat
-    spin_factor = ys.spin_degen
-    momentum = np.rollaxis(yd.dipoles,1,4).astype(np.complex128)
+    nk = yambo_save.nkpoints
+    spin_factor = int(yambo_save.spin_degen)
+    nv = int(np.rint(yambo_save.electrons/spin_factor))
+    energy = yambo_save.eigenvalues/au.eV
+    klist = yambo_save.kpts_iku
+    lattice = yambo_save.lat
+    reciprocal_lattice = yambo_save.rlat
+    spin_factor = yambo_save.spin_degen
+    momentum = np.rollaxis(yambo_dipoles.dipoles,1,4).astype(np.complex128)
 
     klist1d = np.zeros((nk, 3))
     for i in range(nk):
         #klist1d[i] = np.dot(lattice,klist[i])
         klist1d[i] = klist[i]
-   
+
     non_zeros = klist1d > 1e-8
     if size is None:
-        size = np.array([ int(np.int(np.max(1/klist1d[:,q][non_zeros[:,q]] ))) for q in range(3)])
+        size = np.array([int(np.int(np.max(1/klist1d[:,q][non_zeros[:,q]])))
+                         for q in range(3)])
 
     klist3d = np.zeros((size), int)
     nn_table = np.zeros((nk, 3, 2*nn), int)
@@ -65,14 +65,14 @@ def read_yambo(directory,size=None,out='out.hdf5'):
                         nn_table[i, 2, j] = klist3d[ix, iy, (iz+j+1)%size[2]]
 
     hdf5 = h5py.File(out, 'w')
-    dset_energy = hdf5.create_dataset("energy", data=energy)
-    dset_klist1d = hdf5.create_dataset("klist1d", data=klist1d)
-    dset_klist3d = hdf5.create_dataset("klist3d", data=klist3d)
-    dset_lattice = hdf5.create_dataset("lattice", data=lattice)
-    dset_reciprocal = hdf5.create_dataset("reciprocal_lattice",data=reciprocal_lattice)
-    dset_momentum = hdf5.create_dataset("momentum", data=momentum)
-    dset_table = hdf5.create_dataset("neighbour_table", data=nn_table)
-    dset_valence = hdf5.create_dataset("valence", data=nv)
-    dset_size = hdf5.create_dataset("size", data=size)
-    dset_spin = hdf5.create_dataset("spin_factor", data=spin_factor)
+    hdf5.create_dataset("energy", data=energy)
+    hdf5.create_dataset("klist1d", data=klist1d)
+    hdf5.create_dataset("klist3d", data=klist3d)
+    hdf5.create_dataset("lattice", data=lattice)
+    hdf5.create_dataset("reciprocal_lattice",data=reciprocal_lattice)
+    hdf5.create_dataset("momentum", data=momentum)
+    hdf5.create_dataset("neighbour_table", data=nn_table)
+    hdf5.create_dataset("valence", data=nv)
+    hdf5.create_dataset("size", data=size)
+    hdf5.create_dataset("spin_factor", data=spin_factor)
 

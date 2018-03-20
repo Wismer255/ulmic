@@ -1,0 +1,34 @@
+image: continuumio/miniconda3:latest
+
+stages:
+  - install 
+  - test
+
+
+python_2_7:
+  stage: install
+  script:
+  - apt-get update -qy
+  - apt-get install -qy python-pip python-numpy python-scipy pyflakes libhdf5-dev
+  - pip install enum34
+  - pip install -r requirements.txt
+  - conda install mpi4py
+  - ls
+
+test:
+ stage: test
+ script:
+  - apt-get update -qy
+  - apt-get install -qy python-pip python-numpy python-scipy pyflakes libhdf5-dev
+  - pip install enum34
+  - pip install -r requirements.txt
+  - conda install mpi4py
+  - pytest ulmic/tests/general.py
+  
+#python_3_tests:
+#  script:
+#  - apt-get update -qy
+#  - apt-get install -qy python3-pip python3-numpy python3-scipy pyflakes gettext libhdf5-dev 
+#  - apt-get install -qy libfreetype6-dev pkg-config
+#  - pip3 install enum34
+#  - pip3 install -r requirements.txt    

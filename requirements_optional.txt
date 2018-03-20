@@ -1,0 +1,5 @@
+ase==3.13.0
+h5py==2.7.0
+llvmlite==0.20.0
+netCDF4==1.2.9
+git+https://github.com/henriquemiranda/yambopy

@@ -215,6 +215,8 @@ class ObservablesManager(object):
         self._previous_angles_k2 = np.copy(current_angles_k2)
 
 
+
+
     def eval_ground_state_observables(self):
         """ Evaluate off-set for ground state;
             modifies both state and observables objects
@@ -239,7 +241,6 @@ class ObservablesManager(object):
     def get_forward_neighbour_table(self,nn=2):
         medium = self.medium
         forward_neighbour_table = np.zeros((medium.nk_eval,3,nn),int)
-        print(medium.unique_points_no_buffer)
         assert(medium.nk_eval == len(medium.unique_points_no_buffer))
         for i in range(medium.nk_eval):
             for alpha in range(3):

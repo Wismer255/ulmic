@@ -262,8 +262,8 @@ class LocalPotential1D:
                 if k < nk-1:
                     states2 = wave_functions[k+1]
                 elif k == nk-1:
-                    states2 = wave_functions[0]*(np.exp(-1j*self.spatial_axis*2*np.pi/self.total_potential_length)[:,None])
-
+                    #states2 = wave_functions[0]*(np.exp(-1j*self.spatial_axis*2*np.pi/self.total_potential_length)[:,None])
+                    states2 = wave_functions[0]*(np.exp(1j * self.spatial_axis * 2 * np.pi / self.total_potential_length)[:, None])
                 for i in range(nb):
                     for j in range(nb):
                         overlap[k,i,j] = np.dot(states1[:,i].conj(),states2[:,j])

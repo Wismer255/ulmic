@@ -4,7 +4,7 @@ from ulmic.tests.simulation_batch import SimulationBatch
 
 file_medium = 'unittest.hdf5'
 args = (file_medium, 'probe_UV', np.linspace(0.0001,0.0002,10))
-
+np.seterr(invalid='raise')
 
 class TestImports():
 
@@ -53,7 +53,6 @@ class TestImports():
         dict1 = {'gauge':'vg', 'equation':'tdse'}
         dict2 = {'gauge':'vg', 'equation':'lvn'}
         batch.compare_pairs(dict1,dict2)
-        batch.run_all()
 
         dict1 = {'gauge':'lg', 'equation':'tdse'}
         dict2 = {'gauge':'lg', 'equation':'lvn'}

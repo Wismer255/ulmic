@@ -528,7 +528,8 @@ def jit_step_lg_wavefunctions_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size
         for j in range(i):
             tmp_rho += dt*bs[i,j]*drho[j]
 
-        drho[i] = -1j*nonperturbative_jit_solver(nk,size,nv,tmp_rho,overlap,neighbour_table,energy3d,Es[i],t+cs[i]*dt,directions)
+        drho[i] = -1j*nonperturbative_jit_solver(nk,size,nv,tmp_rho,overlap,neighbour_table,
+                                                 energy3d,Es[i],t+cs[i]*dt,directions)
 
     out5 = np.zeros((nk,n,m),dtype=np.complex128)
     error = np.zeros((nk,n,m),dtype=np.complex128)

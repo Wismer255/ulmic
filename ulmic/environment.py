@@ -2,6 +2,9 @@ import datetime
 import os
 import logging
 
+
+
+
 class UlmicEnvironment:
 
     @staticmethod
@@ -11,6 +14,12 @@ class UlmicEnvironment:
         logging.basicConfig(filename=daily_log + '.log', level=logging.DEBUG)
         logger = logging.getLogger(__name__)
         return logger
+
+    @staticmethod
+    def get_daily_log_dir():
+        date_today = str(datetime.datetime.now().date())
+        daily_log_dir = os.path.join(os.environ['ULMIC_LOG'], date_today)
+        return daily_log_dir
 
     @staticmethod
     def get_log_dir():

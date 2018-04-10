@@ -346,15 +346,25 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,nk_range):
 #@jit('complex128[:,:](complex128[:,:,:],float64,complex128[:,:,:,:,:],int64[:,:,:],float64[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(cache=not flags['--no-cache'])
 def evaluate_angles_for_polarisation(rho,time,S,table,energy,nk_range,lattice_vectors,periodicity,klist3d,nk_vol,volume,nv,neighbor_order=1):
+    _,n,m = rho.shape
     phases = np.zeros((len(nk_range),3),np.float64)
     products = np.zeros((len(nk_range),3),np.complex128)
-    for k0 in nk_range:
-        for alpha in range(3):
-            k_nn = table[k0,alpha,neighbor_order-1]
-            v1 = np.exp(1j*energy[k0,:]*time)
-            v2 = np.exp(-1j*energy[k_nn,:]*time)
-            mask = np.outer(v1,v2)
-            product = np.linalg.det(np.dot(np.conj(rho[k0,:,:]).T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
-            products[k0,alpha] = product
+    if n == m:
+        for k0 in nk_range:
+            for alpha in range(3):
+                k_nn = table[k0,alpha,neighbor_order-1]
+                v1 = np.exp(1j*energy[k0,:]*time)
+                v2 = np.exp(-1j*energy[k_nn,:]*time)
+                mask = np.outer(v1,v2)
+                eigenvalues = np.linalg.eigvals(np.dot(np.conj(rho[k0,:,:]).T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
+                products[k0,alpha] = np.prod(eigenvalues**np.abs(eigenvalues))
+    else:
+        for k0 in nk_range:
+            for alpha in range(3):
+                k_nn = table[k0,alpha,neighbor_order-1]
+                v1 = np.exp(1j*energy[k0,:]*time)
+                v2 = np.exp(-1j*energy[k_nn,:]*time)
+                mask = np.outer(v1,v2)
+                product = np.linalg.det(np.dot(np.conj(rho[k0,:,:]).T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
+                products[k0,alpha] = product
     return products
-

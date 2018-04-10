@@ -27,6 +27,7 @@ class SolverManager:
         self.time_progression = self.time_out[0]
         self.index_progression = 0
         self.set_field_directions()
+        self.total_number_of_steps = 0
 
     def set_flags(self,*args):
         """ Pass flags (strings) or a list of flags (list of strings)"""
@@ -49,12 +50,13 @@ class SolverManager:
         """ Pass a dictionary with options or pass options as keywords """
         for arg in args:
             if isinstance(arg,dict):
-                set_options(**arg)
+                self.set_options(**arg)
+            else:
+                raise(ValueError,'Argument type not recognized')
 
         for kwarg in kwargs:
             if kwarg in self.options:
                 self.options[kwarg] = kwargs[kwarg]
-        return
 
     def load_default_parameters(self,flags,options):
 

@@ -47,7 +47,7 @@ class MediumManipulator(LoadHdf5):
         max_deviation = 0.0
         for i in range(self.nk_local):
             for j in range(3):
-                deviation = np.max(abs(self.momentum[i,:,:,j]-self.momentum[i,:,:,0].conj().T))
+                deviation = np.max(abs(self.momentum[i,:,:,j]-self.momentum[i,:,:,j].conj().T))
                 if deviation > max_deviation:
                     max_deviation = deviation
         logging.info('Hermiticity (max. deviation): %e' %max_deviation)

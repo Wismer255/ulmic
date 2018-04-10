@@ -6,6 +6,8 @@ comm = MPI.COMM_WORLD
 comm_rank = comm.Get_rank()
 comm_size = comm.Get_size()
 
+ZERO = 1e-16
+
 class VisualizeObject:
 
     def __init__(self,result):
@@ -74,19 +76,6 @@ class Result:
                     setattr(self, attr, f(self.time_output))
 
 
-    #TODO: Refrain from using heavy calculations here
-    def store_effective_vector_potential(self,correction_level=None,NAeff=None,medium=None,pulses=None):
-        if correction_level is None:
-            self.effective_vector_potential = np.copy(self.vector_potential)
-        if correction_level is 'adiabatic':
-            if NAeff is not None:
-                self.effective_vector_potential = NAeff
-            else:
-                from ulmi.evaluate_jit import evaluate_adiabatic_corrections
-                time = self.time_output[i]
-                self.effective_vector_potential = evaluate_adiabatic_corrections(time,medium,pulses)
-
-
     def store_fields(self,pulses):
         self.electric_field = np.zeros((len(self.time_output),3))
         self.vector_potential = np.zeros((len(self.time_output),3))
@@ -142,7 +131,7 @@ class Result:
         array_A = getattr(self, A).flatten()
         array_B = getattr(self, B).flatten()
 
-        if np.dot(array_A, array_A) > 1e-18:
+        if np.dot(array_A, array_A) > ZERO:
             scalar = (np.dot(array_B,array_A)/np.dot(array_A,array_A))
         else:
             scalar = 0.0
@@ -151,7 +140,11 @@ class Result:
     def calc_deviation(self, A, B, scalar=1.0):
         array_A = getattr(self, A).flatten()
         array_B = getattr(self, B).flatten()
-        return np.sum((scalar*array_A-array_B)**2)/np.sqrt(np.dot(array_A,array_A)*np.dot(array_B,array_B))
+        denominator = np.sqrt(np.dot(array_A,array_A)*np.dot(array_B,array_B))
+        if denominator < ZERO:
+            return 0.0
+        else:
+            return np.sum((scalar*array_A-array_B)**2)/denominator
 
     def compare_arrays(self, A, B):
         scalar = self.get_proportionality_constant(A, B)
@@ -166,13 +159,14 @@ class Result:
 
     def plot(self,*args):
         time = getattr(self,'time_output')
+        fig,ax = plt.subplots()
         for arg in args:
             if isinstance(arg,str):
                 value = getattr(self, arg)
             if isinstance(arg,np.ndarray):
                 value = arg
-            plt.figure()
-            plt.plot(time, value)
+
+            ax.plot(time, value)
         plt.show()
 
     def get_scaled(self, A, B):

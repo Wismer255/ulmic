@@ -1,8 +1,13 @@
+import datetime
 from ulmic.ulmi.observables_manager import ObservablesManager
 from ulmic.ulmi.solver_manager import SolverManager
 from ulmic.ulmi.parallel_manager import ParallelManager
 from ulmic.ulmi.result_manager import ResultManager
 from ulmic.ulmi.state_manager import StateManager
+from ulmic.logs import Logs
+import numpy as np
+
+log = Logs('ulmi')
 
 
 class UltrafastLightMatterInteraction(object):
@@ -55,11 +60,34 @@ class UltrafastLightMatterInteraction(object):
         self.state_manager.init()
         self.observables_manager.init()
 
+        if self.solver_manager.flags['--print-timestep']:
+            datetime_initial = datetime.datetime.now()
+            log.log('')
+            log.log('Start calculation at {0}.... '.format(datetime_initial.isoformat()))
+
         while self.solver_manager.running():
-            print(self.solver_manager.time_progression)
+            if self.solver_manager.flags['--print-timestep']:
+                log.log('Counter={0}, Time={1:+.3f} abs_error = {2:+.2e}, rel_error={3:+.2e}'.format(self.solver_manager.counter,
+                                                                                     self.solver_manager.time_progression,
+                                                                                     self.state_manager.result_absolute_error.max(),
+                                                                                     self.state_manager.result_relative_error.max()))
+
             self.observables_manager.evaluate_observables(self.solver_manager.time_progression,
                                                           self.solver_manager.index_progression)
-            self.state_manager.propagate_solution()
+
+            try:
+                self.state_manager.propagate_solution()
+            except np.linalg.LinAlgError as err:
+                print(err)
+
+
+
+        if self.solver_manager.flags['--print-timestep']:
+            datetime_final = datetime.datetime.now()
+            log.log('...')
+            log.log('Calculation finished.')
+            log.log('Number of steps: {0}'.format(self.solver_manager.total_number_of_steps))
+            log.log('Duration:        {0}'.format(str(datetime_final-datetime_initial)))
 
 
         self.result_manager.post_process_observables()

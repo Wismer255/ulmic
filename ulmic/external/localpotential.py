@@ -6,7 +6,7 @@ from matplotlib import animation
 from scipy.integrate import cumtrapz
 import h5py
 import os
-import clog
+# import clog
 
 MAX_ITERATIONS_NEIGHBORS = 10
 MAX_POTENTIAL_DEVIATION = 1e-12

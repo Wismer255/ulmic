@@ -58,7 +58,7 @@ if __name__ == "__main__":
     #     quit()
         import unittest
         # import your test modules
-        import ulmic.tests.general
+        # import ulmic.tests.general
         #import scenario
         #import thing
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         suite  = unittest.TestSuite()
 
         # add tests to the test suite
-        suite.addTests(loader.loadTestsFromModule(ulmic.tests.general))
+        # suite.addTests(loader.loadTestsFromModule(ulmic.tests.general))
         #suite.addTests(loader.loadTestsFromModule(scenario))
         #suite.addTests(loader.loadTestsFromModule(thing))
 
@@ -310,7 +310,7 @@ if __name__ == "__main__":
     if 'analyse' in sys.argv:
         from ulmic import Medium
         from ulmic.medium.dielectric_function import DielectricResponse
-        from ulmic.medium.extrapolation import Extrapolation
+        # from ulmic.medium.extrapolation import Extrapolation
         import matplotlib.pyplot as plt
 
         if input_data.endswith('hdf5'):
@@ -337,9 +337,9 @@ if __name__ == "__main__":
                     print(abs(medium.energy[0,i]-medium.energy[0,j]),abs(medium.momentum[0,i,j,0]))
 
 
-        from ulmic.medium.sum_rules import MediumConvergence
+        # from ulmic.medium.sum_rules import MediumConvergence
 
-        conv = MediumConvergence(medium)
+        # conv = MediumConvergence(medium)
         #conv.test_sum_rule_plane_z()
         #conv.test_1_and_2_derivative()
         #conv.test_gamma_extrapolation()
@@ -358,22 +358,22 @@ if __name__ == "__main__":
         #plt.show()
         print(medium.klist1d)
         medium.set_max_band_index(200)
-        extrapolation = Extrapolation(medium)
-        extrapolation.extrapolate_fcc_band_plot(range(medium.nk))
+        # extrapolation = Extrapolation(medium)
+        # extrapolation.extrapolate_fcc_band_plot(range(medium.nk))
 
-        plt.figure()
-        for i in [300, 250, 200, 150, 100, 50]:
-            medium.set_max_band_index(i)
-            extrapolation.extrapolate_fcc_band_plot([0],newfigure=False,show=False)
-        plt.show()
+        # plt.figure()
+        # for i in [300, 250, 200, 150, 100, 50]:
+        #     medium.set_max_band_index(i)
+        #     extrapolation.extrapolate_fcc_band_plot([0],newfigure=False,show=False)
+        # plt.show()
 
         #fig,ax = extrapolation.check_validity()
 
         #Energy, oscillator, berry
-        extrapolation.plot_bands()
+        # extrapolation.plot_bands()
 
-        extrapolation.plot_extrapolation_along_axis()
-        plt.show()
+        # extrapolation.plot_extrapolation_along_axis()
+        # plt.show()
 
         # gauge_dependent_response = GaugeDependentReponse(medium)
         # gauge_dependent_response.get_delta_response()
@@ -405,8 +405,8 @@ if __name__ == "__main__":
 
     if 'directional_analysis' in sys.argv:
         from ulmic import Medium
-        from ulmic.medium.dielectric_function import DielectricResponse
-        from ulmic.medium.extrapolation import Extrapolation
+        # from ulmic.medium.dielectric_function import DielectricResponse
+        # from ulmic.medium.extrapolation import Extrapolation
         import matplotlib.pyplot as plt
 
         if input_data.endswith('hdf5'):
@@ -426,15 +426,15 @@ if __name__ == "__main__":
     #    direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
     #    print([direction[q,:] for q in range(3)])
 
-        #print(medium.momentum)
-        dielectric_response = DielectricResponse(medium)
-        #fig,ax = dielectric_response.plot_dielectric_response_3(variable_decoherence=True)
-        direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
-        fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
+        # print(medium.momentum)
+        # dielectric_response = DielectricResponse(medium)
+        # fig,ax = dielectric_response.plot_dielectric_response_3(variable_decoherence=True)
+        # direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
+        # fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
 
-        direction = np.array([[1,0,0],[0,1,0],[0,0,1]]).astype(float)
-        fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
-        plt.show()
+        # direction = np.array([[1,0,0],[0,1,0],[0,0,1]]).astype(float)
+        # fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
+        # plt.show()
         # print(medium.klist1d)
         # medium.set_max_band_index(200)
         # extrapolation = Extrapolation(medium)

@@ -44,14 +44,13 @@ class UltrafastLightMatterInteraction(object):
     def set_flags_and_options(self,*args, **kwargs):
         """ Pass flags (strings) or a list of flags (list of strings)
             Pass a dictionary with options or pass options as keywords """
-
         for arg in args:
             if isinstance(arg,list) or isinstance(arg,str):
                 self.solver_manager.set_flags(arg)
             elif isinstance(arg, dict):
                 self.solver_manager.set_options(arg)
             else:
-                raise ValueError('Argument %s not recgnized')
+                raise ValueError('Argument %s not recognized')
         self.solver_manager.set_options(**kwargs)
 
     def run(self,):

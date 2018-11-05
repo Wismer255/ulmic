@@ -57,6 +57,8 @@ class SolverManager:
         for kwarg in kwargs:
             if kwarg in self.options:
                 self.options[kwarg] = kwargs[kwarg]
+            else:
+                raise(ValueError, 'unknown option: {}'.format(kwarg))
 
     def load_default_parameters(self,flags,options):
 

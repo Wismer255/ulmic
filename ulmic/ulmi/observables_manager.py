@@ -65,6 +65,8 @@ class ObservablesManager(object):
         elif self.state.equation in ['lvn', 'me']:
             self.eval_operator_quantities_dm()
 
+        print("self.solver.flags['--no-overlap'] =", self.solver.flags['--no-overlap'])
+        print("self.solver.flags['--no-covariant'] =", self.solver.flags['--no-covariant'])
         if not self.solver.flags['--no-overlap']:
             if not self.solver.flags['--no-covariant']:
                 self.geometric_current[index, :] = self.get_covariant_current()

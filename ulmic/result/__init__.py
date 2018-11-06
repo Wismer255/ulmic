@@ -69,7 +69,7 @@ class Result:
             t_min = np.min(np.diff(time_old))
         self.time_output = np.arange(time_old[0],time_old[-1],t_min)
 
-        for attr, value in self.__dict__.iteritems():
+        for attr, value in self.__dict__.items():
             if attr is not 'time_output' and type(attr) is type(self.time_output):
                 if value.shape[0] == len(time_old):
                     f = interpolate.interp1d(time_old, value,axis=0)
@@ -103,7 +103,7 @@ class Result:
                 file_output = file_output.replace('.hdf5','.p%d.hdf5' %(comm_rank))
 
             hdf5 = h5py.File(file_output, 'w')
-            for attr, value in self.__dict__.iteritems():
+            for attr, value in self.__dict__.items():
                 dset = hdf5.create_dataset(attr, data=value)
 
 

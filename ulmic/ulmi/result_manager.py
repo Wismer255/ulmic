@@ -60,7 +60,7 @@ class ResultManager(object):
         classical_work = cumtrapz([np.dot(self.observables.electric_field[q], kinematic_current_primitive[q])
                                    for q in range(self.solver.nt_out)], self.solver.time_out, initial=0)
 
-        polarisation = integrated_current_primitive
+        polarisation = integrated_current_effective
         result = Result(time_output=self.solver.time_out,
                         equation=self.observables.state.equation,
                         gauge=self.observables.state.gauge,
@@ -69,12 +69,11 @@ class ResultManager(object):
                         canonical_momentum=-current,
                         kinematic_momentum=-kinematic_current_primitive,
                         integrated_current_primitive=integrated_current_primitive,
-                        integrated_current_effective=integrated_current_effective,
                         geometric_current=geometric_current,
                         geometric_current_primitive=geometric_current_primitive,
                         geometric_current_effective=geometric_current_effective,
                         integrated_geometric_current=geometric_current_primitive,
-                        current=kinematic_current_primitive,
+                        current=kinematic_current_effective,
                         energy_h0=absorbed_energy,
                         energy_lg=energy_lg,
                         energy_vg=energy_vg,

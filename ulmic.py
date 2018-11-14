@@ -296,13 +296,13 @@ if __name__ == "__main__":
         dset_energy = hdf5.create_dataset("energy", data=energy)
         dset_klist1d = hdf5.create_dataset("klist1d", data=klist1d)
         dset_klist3d = hdf5.create_dataset("klist3d", data=klist3d)
-        dset_lattice = hdf5.create_dataset("lattice", data=lattice)
-        dset_reciprocal = hdf5.create_dataset("reciprocal_lattice",data=reciprocal_lattice)
+        dset_lattice = hdf5.create_dataset("lattice_vectors", data=lattice.T)
+        dset_reciprocal = hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice.T)
         dset_momentum = hdf5.create_dataset("momentum", data=momentum)
         if not flags['--no-overlap']:
             dset_overlap = hdf5.create_dataset("overlap", data=S)
         dset_table = hdf5.create_dataset("neighbour_table", data=nn_table)
-        dset_valence = hdf5.create_dataset("valence", data=nvalence)
+        dset_valence = hdf5.create_dataset("valence_bands", data=nvalence)
         dset_size = hdf5.create_dataset("size", data=nk_size)
         dset_spin = hdf5.create_dataset("spin_factor", data=spin_factor)
 

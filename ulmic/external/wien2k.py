@@ -123,10 +123,10 @@ def read_wien2k(input_case, input_overlap=None,
     hdf5.create_dataset("energy", data=energy)
     hdf5.create_dataset("klist1d", data=klist1d)
     hdf5.create_dataset("klist3d", data=klist3d)
-    hdf5.create_dataset("lattice", data=lattice)
-    hdf5.create_dataset("reciprocal_lattice",data=reciprocal_lattice)
+    hdf5.create_dataset("lattice_vectors", data=lattice)
+    hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice)
     hdf5.create_dataset("neighbour_table", data=nn_table)
-    hdf5.create_dataset("valence", data=nv)
+    hdf5.create_dataset("valence_bands", data=nv)
     hdf5.create_dataset("size", data=size)
     hdf5.create_dataset("spin_factor", data=spin_factor)
 

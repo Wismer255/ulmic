@@ -125,10 +125,10 @@ def read_gpaw(input_gpw,nb_max=None,spin_factor=2,
     hdf5.create_dataset("energy", data=energy)
     hdf5.create_dataset("klist1d", data=klist1d)
     hdf5.create_dataset("klist3d", data=klist3d)
-    hdf5.create_dataset("lattice", data=lattice)
-    hdf5.create_dataset("reciprocal_lattice",data=reciprocal_lattice)
+    hdf5.create_dataset("lattice_vectors", data=lattice.T)
+    hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice.T)
     hdf5.create_dataset("neighbour_table", data=nn_table)
-    hdf5.create_dataset("valence", data=nvalence)
+    hdf5.create_dataset("valence_bands", data=nvalence)
     hdf5.create_dataset("size", data=nk_size)
     hdf5.create_dataset("spin_factor", data=spin_factor)
     if calculate_momentum:

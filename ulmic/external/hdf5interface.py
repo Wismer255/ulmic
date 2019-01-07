@@ -83,9 +83,14 @@ class Hdf5Interface:
 
     @staticmethod
     def klist3d_table(klist1d,size):
-        klist3d = np.zeros(size,int)
+        klist3d = np.zeros(size, int)
+        # get the shift vector
+        shift_vector = size * klist1d[0, :]
+        shift_vector -= np.floor(shift_vector)
+        # initialize klist3d
         for i in range(len(klist1d)):
-            i1, i2, i3 = [int(q) for q in np.rint(size*klist1d[i, :])]
+            indices = np.rint(size * klist1d[i,:] - shift_vector)
+            i1, i2, i3 = [int(q) for q in indices]
             klist3d[i1, i2, i3] = i
         return klist3d
 

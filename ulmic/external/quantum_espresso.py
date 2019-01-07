@@ -69,8 +69,11 @@ def read_quantum_espresso(qe_file,size,output_file='out.hdf5',spin_factor=2,
     nk = number_kpoints
     nv = number_valence_bands
     klist3d = np.zeros(tuple(size),int)
+    shift_vector = size * klist1d[0, :]
+    shift_vector -= np.floor(shift_vector)
     for i in range(nk):
-        idx, idy, idz = [int(q) for q in np.rint(size*klist1d[i, :])]
+        indices = np.rint(size*klist1d[i, :] - shift_vector)
+        idx, idy, idz = [int(q) for q in indices]
         klist3d[idx, idy, idz] = i
 
     nn_table = nearest_neighbor_table(klist3d,nn)

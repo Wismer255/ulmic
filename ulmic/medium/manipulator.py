@@ -138,13 +138,16 @@ class MediumManipulator(LoadHdf5):
         size = self.size
 
         if self.nk%(total_factor) == 0:
+            i0 = self.klist3d[0,0,0]
+            indices = np.rint(np.array(size)[np.newaxis,:] * (self.klist1d - \
+                self.klist1d[i0][np.newaxis,:])).astype(np.intp)
+            # boolean_vector = np.isclose(indices % nk_factorization, 0.0)
+            boolean_vector = (indices % nk_factorization == 0)
             if reduction=='isotropic':
-                boolean_vector = np.isclose(np.rint(self.klist1d*size)%nk_factorization, 0.0)
                 boolean_vector = np.array([np.all(q) for q in boolean_vector])
             if reduction=='X_line':
-                boolean_vector = np.isclose(np.rint(self.klist1d*size)%nk_factorization, 0.0)
                 for i in range(self.nk):
-                    if int(np.rint(self.klist3d[i,:]*size)[0]) != int(np.rint(self.klist1d[i,:]*size)[1]) or int(np.rint(self.klist1d[i,:]*size)[1]) != int(np.rint(self.klist1d[i,:]*size)[2]):
+                    if indices[i,0] !=  indices[i,1] or indices[i,1] != indices[i,2]:
                         boolean_vector[i] = False
                 boolean_vector = np.array([np.all(q) for q in boolean_vector])
 
@@ -158,10 +161,10 @@ class MediumManipulator(LoadHdf5):
             self.nk_buffer = 0
             self.nk_local = self.nk
 
-            #self.klist3d = self.klist3d[::nk_factorization[0],::nk_factorization[1],::nk_factorization[2]]
+            # rest klist3d
             self.klist3d = np.zeros(self.size,int)
             for i in range(self.nk):
-                idx,idy,idz = [int(q) for q in np.rint(self.size*self.klist1d[i,:])]
+                idx,idy,idz = indices[i,:]
                 self.klist3d[idx,idy,idz] = i
 
             if hasattr(self, 'overlap'):

@@ -100,8 +100,11 @@ def read_wien2k(input_case, input_overlap=None,
     reciprocal_lattice = np.array([rv1,rv2,rv3]).T
     nn_table = np.zeros((nk, 3, 2*nn), int)
 
+    shift_vector = size * klist1d[0, :]
+    shift_vector -= np.floor(shift_vector)
     for i in range(nk):
-        idx, idy, idz = [int(q) for q in np.rint(size*klist1d[i, :])]
+        indices = np.rint(size*klist1d[i, :] - shift_vector)
+        idx, idy, idz = [int(q) for q in indices]
         klist3d[idx, idy, idz] = i
 
     for ix in range(size[0]):

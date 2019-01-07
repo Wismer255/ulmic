@@ -19,6 +19,7 @@ def nearest_neighbor_table(klist3d, nn):
                         nn_table[i, 1, j] = klist3d[ix, (iy + j) % size[1], iz]
                         nn_table[i, 2, j] = klist3d[ix, iy, (iz + j) % size[2]]
                     if j >= 0:
+                        # DOES j=0 CORRESPOND TO THE FIRST NEIGHBOR? (VLAD)
                         nn_table[i, 0, j] = klist3d[(ix + j + 1) % size[0], iy, iz]
                         nn_table[i, 1, j] = klist3d[ix, (iy + j + 1) % size[1], iz]
                         nn_table[i, 2, j] = klist3d[ix, iy, (iz + j + 1) % size[2]]

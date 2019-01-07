@@ -47,7 +47,7 @@ class LoadHdf5(object):
             energy:     (nk,nb)
             momentum:   (nk,nb,nb,3)
             overlap:    (nk,3,2,nb,nb)
-            neighbor_table: (nk,3,2)
+            neighbour_table: (nk,3,2)
 
         """
 
@@ -78,7 +78,6 @@ class LoadHdf5(object):
         self.nk_vol,self.nb = hdf5_data['energy'].shape
         self.unique_points_no_buffer = list(set(list(self.klist3d.flatten())))
 
-        self.klist1d_int = self.generate_klist1d_int()
         self.k_inner = self.generate_k_slice(k_points)
         self.k_buffer = self.generate_k_buffer(self.k_inner, buffer_width)
         self.k_slice_buffer = np.concatenate((self.k_inner, self.k_buffer))
@@ -110,8 +109,9 @@ class LoadHdf5(object):
         assert((self.size == self.klist3d.shape).all())
         assert(len(self.klist1d) == np.prod(self.size))
         assert(self.klist1d.shape[1] == 3)
+        i0 = self.klist3d[0,0,0]
         for i in range(len(self.klist1d)):
-            n1,n2,n3 = np.rint(self.size*self.klist1d[i]).astype(np.int64)
+            n1,n2,n3 = np.rint(self.size * (self.klist1d[i] - self.klist1d[i0])).astype(np.intp)
             assert(i == self.klist3d[n1,n2,n3])
 
     def read(self, read_momentum=True, read_overlap=True):
@@ -120,12 +120,6 @@ class LoadHdf5(object):
             self.load_momentum(self.k_slice_buffer, self.band_slice)
         if read_overlap:
             self.load_overlap(self.k_slice_buffer, self.band_slice)
-
-    def generate_klist1d_int(self,):
-        klist1d_int = np.zeros(self.klist1d.shape,int)
-        for i in range(self.nk1d):
-            klist1d_int[i] = [int(q) for q in np.rint(self.size*self.klist1d[i, :])]
-        return klist1d_int
 
     def generate_k_slice(self, k_points):
         if k_points is None:

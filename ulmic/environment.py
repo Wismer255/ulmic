@@ -60,14 +60,14 @@ logging.basicConfig(filename=daily_log+'.log',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 if not os.environ['ULMIC_HOME']:
-    logger.info('Environment variable ULMIC_HOME not found. Setting to %s' %os.getcwd())
+    logger.info('Environment variable ULMIC_HOME not found. Setting to {}'.format(os.getcwd()))
     os.environ['ULMIC_HOME'] = os.getcwd()
 
 if not os.environ['ULMIC_DATA']:
-    logger.info('Environment variable ULMIC_DATA not found. Setting to %s' %os.getcwd())
+    logger.info('Environment variable ULMIC_DATA not found. Setting to {}'.format(os.getcwd()))
     os.environ['ULMIC_DATA'] = os.getcwd()
 
 if not os.environ['ULMIC_TEST']:
-    logger.info('Environment variable ULMIC_TEST not found. Setting to %s' %os.getcwd())
+    logger.info('Environment variable ULMIC_TEST not found. Setting to {}'.format(os.getcwd()))
     os.environ['ULMIC_TEST'] = os.getcwd()
 

@@ -60,7 +60,7 @@ class Result:
             dt = self.time_output[1]-self.time_output[0]
             return 2*np.pi*np.fft.fftfreq(nt-nt_crop,dt)
         else:
-            print('std = %e' %(std))
+            print('std = {:e}'.format(std))
             raise(ValueError)
 
     def interpolate_values_to_uniform_grid(self,t_min=None):
@@ -100,7 +100,7 @@ class Result:
         if format is 'hdf5':
             import h5py
             if comm_size > 1:
-                file_output = file_output.replace('.hdf5','.p%d.hdf5' %(comm_rank))
+                file_output = file_output.replace('.hdf5','.p{:d}.hdf5'.format(comm_rank))
 
             hdf5 = h5py.File(file_output, 'w')
             for attr, value in self.__dict__.items():

@@ -60,7 +60,7 @@ class InterpolatedPulse(object):
         self.spl_deriv = UnivariateSpline(t_new,(self.E_max/norm)*A_new,s=0,ext='zeros').derivative(n=1)
 
         if abs(A_new[0]) > 1e-10 or abs(A_new[-1]) > 1e-10:
-            print('Warning: A[0]=%e and A[-1]=%e' %(A_new[0],A_new[-1]))
+            print('Warning: A[0]={:e} and A[-1]={:e}'.format(A_new[0], A_new[-1]))
 
     def eval_potential_fast(self,t):
         return  self.polarisation_vector * self.spl(t)

@@ -50,7 +50,7 @@ class UltrafastLightMatterInteraction(object):
             elif isinstance(arg, dict):
                 self.solver_manager.set_options(arg)
             else:
-                raise ValueError('Argument %s not recognized')
+                raise ValueError('Argument {} not recognized'.format(arg))
         self.solver_manager.set_options(**kwargs)
 
     def run(self,):
@@ -101,4 +101,4 @@ class UltrafastLightMatterInteraction(object):
             if kwarg in state_parameters:
                 setattr(self.state_manager, kwarg, kwargs[kwarg])
             else:
-                raise ValueError('Parameter %s not recognized!' %kwarg)
+                raise ValueError('Parameter {} not recognized!'.format(kwarg))

@@ -252,7 +252,7 @@ class StateManager(InitialState):
             state attribute if it does '''
         index = self.solver.index_progression
         if tmp_state is None:
-            raise ValueError('Combination of gauge=%s and equation=%s is invalid!' % (self.gauge, self.equation))
+            raise ValueError('Combination of gauge={} and equation={} is invalid!'.format(self.gauge, self.equation))
 
         is_accepted = (self.force_propagation
                         or tmp_rel_error < self.solver.options['tolerance_relative_error']

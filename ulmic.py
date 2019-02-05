@@ -22,13 +22,13 @@ if __name__ == "__main__":
     if 'init' in sys.argv:
         variables = ['ULMIC_HOME','ULMIC_DATA','ULMIC_TEST','ULMIC_LOG']
         for variable in variables:
-            print("The variable %s is current set to:" %variable)
+            print("The variable {} is current set to:".format(variable))
             try:
                 print("  " + os.environ[variable])
             except:
                 print("")
             try:
-                new_path = str(input("New path for %s:" % variable))
+                new_path = str(input("New path for {}:".format(variable)))
             except SyntaxError:
                 new_path = None
 
@@ -390,11 +390,11 @@ if __name__ == "__main__":
         indirect_band_gap = au.eV*(np.min(medium.energy[:, medium.nv])-np.max(medium.energy[:, medium.nv-1]))
 
         output_text = '''Material summary:
-    Direct band gap: %.3f eV
-    Indirect band gap: %.3f eV
-    Number of bands: %d
-    Number of valence bands: %d
-        ''' %(direct_band_gap, indirect_band_gap,medium.nb,medium.nv)
+    Direct band gap: {:.3f} eV
+    Indirect band gap: {:.3f} eV
+    Number of bands: {:d}
+    Number of valence bands: {:d}
+        '''.format(direct_band_gap, indirect_band_gap, medium.nb, medium.nv)
 
         print(output_text)
 
@@ -469,11 +469,11 @@ if __name__ == "__main__":
         indirect_band_gap = au.eV*(np.min(medium.energy[:, medium.nv])-np.max(medium.energy[:, medium.nv-1]))
 
         output_text = '''Material summary:
-    Direct band gap: %.3f eV
-    Indirect band gap: %.3f eV
-    Number of bands: %d
-    Number of valence bands: %d
-        ''' %(direct_band_gap, indirect_band_gap,medium.nb,medium.nv)
+    Direct band gap: {:.3f} eV
+    Indirect band gap: {:.3f} eV
+    Number of bands: {:d}
+    Number of valence bands: {:d}
+        '''.format(direct_band_gap, indirect_band_gap, medium.nb, medium.nv)
 
         print(output_text)
 

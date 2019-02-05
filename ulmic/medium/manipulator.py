@@ -39,7 +39,7 @@ class MediumManipulator(LoadHdf5):
             self.fix_overlap()
 
         if write_summary_to_log:
-            logging.info('%s loaded as Medium.' % self.input_file)
+            logging.info('{} loaded as Medium.'.format(self.input_file))
 
     def check_hermiticity(self,):
         """ Calculate how much the numerically obtained momentum matrix
@@ -50,7 +50,7 @@ class MediumManipulator(LoadHdf5):
                 deviation = np.max(abs(self.momentum[i,:,:,j]-self.momentum[i,:,:,j].conj().T))
                 if deviation > max_deviation:
                     max_deviation = deviation
-        logging.info('Hermiticity (max. deviation): %e' %max_deviation)
+        logging.info('Hermiticity (max. deviation): {:e}'.format(max_deviation))
 
     def fix_hermiticity(self,):
         """ Ensure hermiticity of momentum matrix through addition. """

@@ -61,7 +61,7 @@ class LoadHdf5(object):
         elif os.path.isfile(os.path.join(ue.get_data_dir(),input_file)):
             hdf5_data = h5py.File(os.path.join(ue.get_data_dir(),input_file), 'r')
         else:
-            raise(ValueError('File %s not found' %input_file))
+            raise(ValueError('File {} not found'.format(input_file)))
         self.klist1d = hdf5_data['klist1d'][()]
         self.klist3d = hdf5_data['klist3d'][()]
         self.lattice_vectors = hdf5_data['lattice_vectors'][()]
@@ -103,7 +103,7 @@ class LoadHdf5(object):
         for i in range(self.nk):
             if np.allclose(self.klist1d[i],0.0):
                 self.k_gamma = i
-        logging.info('%s successfully loaded.' % self.input_file)
+        logging.info('{} successfully loaded.'.format(self.input_file))
 
     def check_input_data(self):
         np.testing.assert_allclose(np.dot(self.reciprocal_vectors.T,self.lattice_vectors),
@@ -199,9 +199,9 @@ class LoadHdf5(object):
                 P = hdf5_data['momentum'][slice_k[i]].astype(np.complex128)
                 self.momentum[i] = P[slice_band[:,None,None], slice_band[:,None], :]
         else:
-            logging.warning('Momentum matrix not present in %s. '
+            logging.warning('Momentum matrix not present in {}. '
                             'Set read_momentum=False to disable '
-                            'this warning' %self.input_file)
+                            'this warning'.format(self.input_file))
 
     def load_overlap(self, slice_k, slice_band):
         hdf5_data = h5py.File(self.input_file, 'r')
@@ -212,6 +212,6 @@ class LoadHdf5(object):
                 O = hdf5_data['overlap'][slice_k[i]]
                 self.overlap[i] = O[:, :, slice_band[:,None], slice_band]
         else:
-            logging.warning('Overlap matrix not present in %s. '
+            logging.warning('Overlap matrix not present in {}. '
                             'Set read_overlap=False to disable '
-                            'this warning' %self.input_file)
+                            'this warning'.format(self.input_file))

@@ -71,7 +71,7 @@ class AnalyticalPulse(object):
         elif self.variables['envelope'] == 'cos4':
             vector_potential += self.get_cos4_vector_potential(self.variables,t)
         else:
-            raise ValueError('Pulse parameter %s for envelope s not valid')
+            raise ValueError('Pulse parameter {} for envelope is not valid'.format(self.variables['envelope']))
         return vector_potential
 
     def eval_field_fast(self,t):
@@ -87,7 +87,7 @@ class AnalyticalPulse(object):
         elif self.variables['envelope'] == 'cos4':
             electric_field += self.get_cos4_electric_field(self.variables,t)
         else:
-            raise ValueError('Pulse parameter %s for envelope s not valid')
+            raise ValueError('Pulse parameter {} for envelope s not valid'.format(self.variables['envelope']))
         return electric_field
 
     def get_vector_potential(self,pulse,time,derivative=0):
@@ -113,7 +113,7 @@ class AnalyticalPulse(object):
 
             return vector_potential
         else:
-            raise ValueError('Pulse parameter %s for envelope s not valid')
+            raise ValueError('Pulse parameter {} for envelope s not valid'.format(self.variables['envelope']))
 
     def set_factorials(self,n=3):
         self.nfac = []

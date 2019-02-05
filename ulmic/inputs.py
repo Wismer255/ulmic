@@ -38,7 +38,7 @@ for arg in sys.argv:
         if arg in flags:
             flags[arg] = True
         else:
-            print('ulmic: Unrecognized flag %s' %arg)
+            print('ulmic: Unrecognized flag {}'.format(arg))
 
 for arg in sys.argv:
     if '==' in arg:
@@ -46,7 +46,7 @@ for arg in sys.argv:
         if key in options:
             options[key] = list(map(type(options[key]),[val]))[0]
         else:
-            print('ulmic: Unrecognized parameter %s' %arg)
+            print('ulmic: Unrecognized parameter {}'.format(arg))
 
 if flags['--verbose']:
     print(flags)

@@ -28,7 +28,7 @@ class Hdf5Interface:
             if kwarg in self.variables:
                 self.variables[kwarg] = kwargs[kwarg]
             else:
-                raise('Keyword %s not recognized' %kwarg)
+                raise('Keyword {} not recognized'.format(kwarg))
 
     def check_variables(self,):
 
@@ -55,10 +55,10 @@ class Hdf5Interface:
 
             if value is None:
                 if key in ['momentum', 'overlap']:
-                    print('Warning: %s is missing' %s)
+                    print('Warning: {} is missing'.format(s))
                     del self.variables[key]
                 else:
-                    raise ValueError('%s is None' %key)
+                    raise ValueError('{} is None'.format(key))
 
     def save(self, output_file=None, open_file_as='w', check_variables=True, readable_by_octave=False):
 

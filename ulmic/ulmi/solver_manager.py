@@ -37,14 +37,14 @@ class SolverManager:
             elif isinstance(arg,list) or isinstance(arg,tuple):
                 self.set_flags(*tuple(arg))
             else:
-                raise (ValueError('Flag %s not recognized '%arg))
+                raise (ValueError('Flag {} not recognized '.format(arg)))
         return
 
     def _set_flag(self,arg):
         if arg in self.flags:
             self.flags[arg] = True
         else:
-            raise (ValueError('Flag %s not recognized' %arg) )
+            raise (ValueError('Flag {} not recognized'.format(arg)) )
 
     def set_options(self,*args,**kwargs):
         """ Pass a dictionary with options or pass options as keywords """
@@ -103,11 +103,11 @@ class SolverManager:
             print(time_now)
 
     def track_finish(self):
-        print('Total number of steps: %d' %self.solver_manager.total_number_of_steps)
+        print('Total number of steps: {:d}'.format(self.solver_manager.total_number_of_steps))
 
     def running(self):
         if self.index_progression < self.nt_out-1:
             self.time_progression += self.default_dt
             self.index_progression += 1
             return True
-
+        else: return False

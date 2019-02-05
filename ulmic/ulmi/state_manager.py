@@ -98,8 +98,13 @@ class StateManager(InitialState):
                 elif self.equation == 'lvn':
                     tmp_state, tmp_abs_error, tmp_rel_error = self.solve_lvn_vg()
 
-            if self.accept_solution(tmp_state, tmp_abs_error, tmp_rel_error):
-                break
+            if self.check_solution(tmp_state, tmp_abs_error, tmp_rel_error):
+                if self.solver.default_dt - self.cumulative_dt < 0.75 * self.dt_now:
+                    # since self.solver.default_dt is always an integer
+                    # multiple of self.dt_now, the above condition means that
+                    # the final substep has been successfully accomplished
+                    break
+
 
 
     def field_is_zero(self,):
@@ -242,7 +247,7 @@ class StateManager(InitialState):
                                         self.medium.energy,
                                         self.medium.momentum, self.state, vector_potentials, self.gamma)
 
-    def accept_solution(self, tmp_state, tmp_abs_error, tmp_rel_error):
+    def check_solution(self, tmp_state, tmp_abs_error, tmp_rel_error):
         ''' Check if returned solution passes all criteria and update
             state attribute if it does '''
         index = self.solver.index_progression
@@ -260,8 +265,6 @@ class StateManager(InitialState):
                 self.result_absolute_error[index] = tmp_abs_error
             if tmp_rel_error > self.result_relative_error[index]:
                 self.result_relative_error[index] = tmp_rel_error
-            if (self.solver.default_dt - self.cumulative_dt) < 0.75 * self.dt_now:
-                return True
         else:
             self.solver.counter += 1
             self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
@@ -270,3 +273,4 @@ class StateManager(InitialState):
                     raise (ValueError('Time step is below dt_tolerance!'))
                 self.force_propagation = True
                 warnings.warn('Time step is below dt_tolerance! Forcing advancement')
+        return is_accepted

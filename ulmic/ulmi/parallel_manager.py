@@ -2,7 +2,7 @@ from ulmic.environment import UlmicEnvironment
 from mpi4py import MPI
 import numpy as np
 
-class ParallelManager(object):
+class ParallelManager:
 
     def __init__(self,medium):
         self.medium = medium

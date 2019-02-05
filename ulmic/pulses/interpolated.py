@@ -7,7 +7,7 @@ from ulmic.atomic_units import AtomicUnits
 au = AtomicUnits()
 
 
-class InterpolatedPulse(object):
+class InterpolatedPulse:
 
     def __init__(self,pulse_name, data_type='E', E_max=1.0, polarisation_vector=np.array([1,0,0]),
                  use_frequency_filter=False, Nfilter=28):

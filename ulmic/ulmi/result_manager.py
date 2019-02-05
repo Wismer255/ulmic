@@ -3,7 +3,7 @@ from scipy.integrate import cumtrapz
 from ulmic.result import Result
 import matplotlib.pyplot as plt
 
-class ResultManager(object):
+class ResultManager:
 
     def __init__(self, medium):
         self.medium = medium

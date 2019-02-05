@@ -13,7 +13,7 @@ VA_au = 1/51.4220652
 nm_Eph = 2*pi*137.035999/(1/0.052917721)
 
 
-class AnalyticalPulse(object):
+class AnalyticalPulse:
 
     def __init__(self, pulse_type):
         """Specify pulse parameters.

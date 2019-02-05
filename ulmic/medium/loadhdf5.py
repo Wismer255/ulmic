@@ -11,7 +11,7 @@ except:
     MPI4PY_INSTALLED = False
 
 
-class LoadHdf5(object):
+class LoadHdf5:
 
     def __init__(self, input_file,
                  k_points=None, buffer_width=(0,0,0),

@@ -10,7 +10,7 @@ import numpy as np
 log = Logs('ulmi')
 
 
-class UltrafastLightMatterInteraction(object):
+class UltrafastLightMatterInteraction:
 
     def __init__(self,medium,pulses,time,*args,**kwargs):
 

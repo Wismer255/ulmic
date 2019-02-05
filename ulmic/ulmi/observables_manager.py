@@ -4,7 +4,7 @@ from ulmic.ulmi.jit.evaluate_observables import evaluate_current_jit,evaluate_el
 from ulmic.ulmi.jit.evaluate_observables import evaluate_lvn_current_jit, evaluate_lvn_electrons_jit,evaluate_lvn_energy_jit, evaluate_lvn_acceleration_jit
 
 
-class ObservablesManager(object):
+class ObservablesManager:
 
     def __init__(self,medium,pulses):
 

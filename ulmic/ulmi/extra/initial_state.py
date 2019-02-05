@@ -1,6 +1,6 @@
 import numpy as np
 
-class InitialState(object):
+class InitialState:
 
     def get_initial_state_by_name(self):
 

@@ -187,7 +187,7 @@ if __name__ == "__main__":
         r_g = calc.wfs.gd.get_grid_point_coordinates()
         Ng = np.prod(np.shape(r_g)[1:]) * (False + 1)
         bands = range(nb)
-        direction = np.eye(3, dtype=int)
+        direction = np.eye(3, dtype=np.intp)
 
         klist1d = np.zeros((nkpts, 3))
         klist3d = np.zeros((nk_size), int)

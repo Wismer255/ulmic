@@ -531,7 +531,7 @@ previously be called 'final'.""")
             energy_bins[:] = E_min + bin_size * np.arange(nbins)
         # fill the bins
         bin_occupations = np.zeros(nbins)
-        counts = np.zeros(nbins, dtype=np.int16)
+        counts = np.zeros(nbins, dtype=np.intp)
         for initial_band in range(nv):
             psi = self.psi[:, :, initial_band]
             excitation_probabilities = np.real(psi * psi.conj()) # (nk, nb)

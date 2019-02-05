@@ -47,9 +47,9 @@ def read_gpaw(input_gpw,nb_max=None,spin_factor=2,
     reciprocal_lattice = (2*np.pi*au.AA)*atoms.get_reciprocal_cell()
 
     bands = range(nb)
-    direction = np.eye(3, dtype=int)
+    direction = np.eye(3, dtype=np.intp)
     klist1d = np.zeros((nk, 3))
-    klist3d = np.zeros((nk_size), int)
+    klist3d = np.zeros((nk_size), dtype=np.intp)
     energy = np.zeros((nk, nb))
 
     for i in range(nk):

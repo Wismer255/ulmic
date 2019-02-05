@@ -128,8 +128,8 @@ class MediumProperties(MediumManipulator):
         """
         ndims = self.momentum.shape[-1] # the number of dimensions
         inverse_mass = np.zeros([self.nk, self.nb, ndims, ndims])
-        numerator   = np.empty(self.nk, dtype=complex)
-        denominator = np.empty(self.nk, dtype=complex)
+        numerator   = np.empty(self.nk, dtype=np.complex)
+        denominator = np.empty(self.nk, dtype=np.complex)
         FD_inverse_mass = self.finite_difference_inverse_mass()
         for n in range(self.nb):
             denominator = self.energy[:, n].reshape((self.nk, 1)) - self.energy

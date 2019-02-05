@@ -95,7 +95,7 @@ class LoadHdf5(object):
         else:
             band_max = min(self.nb, band_max)
         self.nb = band_max
-        self.band_slice = np.arange(self.nb, dtype=int)
+        self.band_slice = np.arange(self.nb, dtype=np.intp)
 
         if read_now:
             self.read(read_momentum,read_overlap)

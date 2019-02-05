@@ -91,10 +91,11 @@ class LoadHdf5(object):
         self.nk_local = len(self.k_slice_buffer)
 
         if band_max is None:
-            self.band_slice = np.arange(self.nb, dtype=int)
+            band_max = self.nb
         else:
-            self.band_slice = np.band_slice[:min(self.nb,band_max)]
-            self.nb = len(self.band_slice)
+            band_max = min(self.nb, band_max)
+        self.nb = band_max
+        self.band_slice = np.arange(self.nb, dtype=int)
 
         if read_now:
             self.read(read_momentum,read_overlap)
@@ -197,7 +198,7 @@ class LoadHdf5(object):
             slice_band = np.array(slice_band) # just to be sure
             for i in range(len(slice_k)):
                 P = hdf5_data['momentum'][slice_k[i]].astype(np.complex128)
-                self.momentum[i] = P[slice_band[:,None,None], slice_band[:,None], :]
+                self.momentum[i] = P[slice_band[:,None], slice_band, :]
         else:
             logging.warning('Momentum matrix not present in {}. '
                             'Set read_momentum=False to disable '

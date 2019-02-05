@@ -74,13 +74,12 @@ class StateManager(InitialState):
         return state
 
     def propagate_solution(self,):
+        """ Propagate over a time interval of self.solver.default_dt """
         self.time_now = self.solver.time_progression
         self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
         self.cumulative_dt = 0.0
-        keep_running = True
 
-
-        while keep_running:
+        while True:
             self.solver.total_number_of_steps += 1
             if self.field_is_zero():
                 tmp_state, tmp_abs_error, tmp_rel_error = self.field_free_propagation()
@@ -100,7 +99,7 @@ class StateManager(InitialState):
                     tmp_state, tmp_abs_error, tmp_rel_error = self.solve_lvn_vg()
 
             if self.accept_solution(tmp_state, tmp_abs_error, tmp_rel_error):
-                keep_running = False
+                break
 
 
     def field_is_zero(self,):
@@ -250,11 +249,11 @@ class StateManager(InitialState):
         if tmp_state is None:
             raise ValueError('Combination of gauge=%s and equation=%s is invalid!' % (self.gauge, self.equation))
 
-        accept_solution = (self.force_propagation
-                           or tmp_rel_error < self.solver.options['tolerance_relative_error']
-                           or tmp_abs_error < self.solver.options['tolerance_absolute_error'])
+        is_accepted = (self.force_propagation
+                        or tmp_rel_error < self.solver.options['tolerance_relative_error']
+                        or tmp_abs_error < self.solver.options['tolerance_absolute_error'])
 
-        if accept_solution:
+        if is_accepted:
             self.state = tmp_state
             self.cumulative_dt += self.dt_now
             if tmp_abs_error > self.result_absolute_error[index]:
@@ -267,9 +266,7 @@ class StateManager(InitialState):
             self.solver.counter += 1
             self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
             if self.dt_now < self.solver.options['time_step_min']:
-
                 if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
                     raise (ValueError('Time step is below dt_tolerance!'))
-
                 self.force_propagation = True
                 warnings.warn('Time step is below dt_tolerance! Forcing advancement')

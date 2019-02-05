@@ -331,15 +331,15 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,nk_range):
         eigval, eigvec = np.linalg.eigh(Hk_dk)
         U,Uh = eigvec,np.conj(eigvec).T
 
-        #Return adiabatic currents
+        # evaluate adiabatic currents
         rho_ad = np.dot(U,rho00)
         p_A_x = np.dot(U,np.dot(momentum[k,:,:,0],Uh))
         p_A_y = np.dot(U,np.dot(momentum[k,:,:,1],Uh))
         p_A_z = np.dot(U,np.dot(momentum[k,:,:,2],Uh))
-        Neff[0] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_x - momentum[k,:,:,0],rho_ad))).real/(nk_vol*volume)
-        Neff[1] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_y - momentum[k,:,:,1],rho_ad))).real/(nk_vol*volume)
-        Neff[2] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_z - momentum[k,:,:,2],rho_ad))).real/(nk_vol*volume)
-    return Neff
+        Neff[0] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_x - momentum[k,:,:,0],rho_ad))).real
+        Neff[1] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_y - momentum[k,:,:,1],rho_ad))).real
+        Neff[2] += np.trace(np.dot(np.conj(rho_ad).T, np.dot(p_A_z - momentum[k,:,:,2],rho_ad))).real
+    return Neff / (nk_vol*volume)
 
 
 

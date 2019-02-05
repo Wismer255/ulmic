@@ -107,7 +107,7 @@ class TestsConvergence():
 #         pulses.variables[0]['FWHM'] = 2.0/au.fs
 #         pulses.variables[0]['omega'] = 1.6/au.eV
 #         time = np.linspace(-20.0/au.fs,120.0/au.fs,8000)
-#         ulmi = UltrafastLightMatterInteraction(medium,pulses,time,step_size='auto',options={'time_step_min':1e-3,'relative_error_tolerance':1e-8})
+#         ulmi = UltrafastLightMatterInteraction(medium,pulses,time,step_size='auto',options={'time_step_min':1e-3,relative_error_tolerance':1e-8})
 #         ulmi.gamma = 0.1
 #         result = ulmi.run_stepwise(gauge='vg',equation='lvn')
 #         file_result = os.path.join(test_dir,'result_1d_vg_dephasing_convergence_pub5_100k_1e-20.hdf5')

@@ -107,8 +107,8 @@ class LocalPotential1D:
         nx = self.total_spatial_points
         dx = self.spatial_step
         potential = self.create_potential()
-        kinetic_operator = np.zeros((nx,nx),complex)
-        potential_operator = np.zeros((nx,nx),complex)
+        kinetic_operator = np.zeros((nx,nx), dtype=np.complex)
+        potential_operator = np.zeros((nx,nx), dtype=np.complex)
         for i in range(nx):
             # kinetic_operator[i-1,i] = -0.5/(dx**2) -1j*q/(2*dx)
             # kinetic_operator[i,i-1] = -0.5/(dx**2) +1j*q/(2*dx)
@@ -132,9 +132,9 @@ class LocalPotential1D:
         '''TODO: Check indices'''
         kn = self.positive_wavenumbers
         knt = self.total_wavenumbers
-        hamilton_kinetic = np.zeros((knt,knt),complex)
-        hamilton_potential = np.zeros((knt,knt),complex)
-        hamilton_periodic = np.zeros((knt,knt),complex)
+        hamilton_kinetic = np.zeros((knt,knt), dtype=np.complex)
+        hamilton_potential = np.zeros((knt,knt), dtype=np.complex)
+        hamilton_periodic = np.zeros((knt,knt), dtype=np.complex)
         potential = self.create_potential()
         for i in range(knt):
             wave_vector_i = 2.0*np.pi*(i-kn)/self.total_potential_length
@@ -228,7 +228,7 @@ class LocalPotential1D:
 
         def get_momentum_operator():
             ''' Three point-stencil '''
-            derivative_operator = np.zeros((nx, nx), complex)
+            derivative_operator = np.zeros((nx, nx), dtype=np.complex)
             for i in range(nx):
                 derivative_operator[i - 1, i] = -1 / (2 * dx)
                 derivative_operator[i, i - 1] =  1 / (2 * dx)
@@ -236,7 +236,7 @@ class LocalPotential1D:
         derivative_operator = get_momentum_operator()
 
         def get_all_wave_functions():
-            wave_functions = np.zeros((nk,nx,nb),complex)
+            wave_functions = np.zeros((nk,nx,nb), dtype=np.complex)
             for k in range(nk):
                 wave_functions[k] = self.get_real_space_states(self.k_axis[k],0,nb)
 
@@ -247,7 +247,7 @@ class LocalPotential1D:
         wave_functions = get_all_wave_functions()
 
         def get_momentum_matrix_elements():
-            momentum = np.zeros((nk, nb, nb), complex)
+            momentum = np.zeros((nk, nb, nb), dtype=np.complex)
             for k in range(nk):
                 for i in range(nb):
                     momentum[k,i,i] += self.k_axis[k]*np.dot(wave_functions[k,:,i].conj(),wave_functions[k,:,i])
@@ -256,7 +256,7 @@ class LocalPotential1D:
             return momentum
 
         def get_overlap_matrix_elements():
-            overlap = np.zeros((nk, nb, nb), complex)
+            overlap = np.zeros((nk, nb, nb), dtype=np.complex)
             for k in range(nk):
                 states1 = wave_functions[k]
                 if k < nk-1:
@@ -274,8 +274,8 @@ class LocalPotential1D:
         ''' Generate data needed for a complete Medium HDF5 file '''
         nk,nb = self.k_points, self.bands
         energy = np.array([self.get_eigenvalues(q)[:nb] for q in self.k_axis])
-        momentum = np.zeros((nk,nb,nb,3),complex)
-        overlap = np.zeros((nk,3,2,nb,nb),complex)
+        momentum = np.zeros((nk,nb,nb,3), dtype=np.complex)
+        overlap = np.zeros((nk,3,2,nb,nb), dtype=np.complex)
         momentum1d,overlap1d = self.get_momentum_and_overlap_matrices()
 
         momentum[:,:,:,0] = np.copy(momentum1d)

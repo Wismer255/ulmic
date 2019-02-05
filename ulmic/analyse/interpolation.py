@@ -29,8 +29,8 @@ class ReciprocalSpaceInterpolator:
         """
         self.extra_dimensions = tuple()
         if data is None:
-            self.data = np.zeros(self.klist3d.shape)
-            self.Fdata = np.zeros(self.klist3d.shape)
+            self.data = np.zeros_like(self.klist3d)
+            self.Fdata = np.zeros_like(self.klist3d)
             self.data_is_real = True
             self.data_is_nonnegative = True
             self.max_data = 0

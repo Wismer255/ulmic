@@ -356,7 +356,7 @@ class FinalStateAnalyzer:
         nk = self.medium.nk
         nb = self.medium.nb
         nw = len(omega_array)
-        sigma = np.zeros((nw, 3, 3), dtype = np.complex)
+        sigma = np.zeros((nw, 3, 3), dtype=np.complex)
         adiabatic_corrections = adiabatic_corrections.lower()
         if adiabatic_corrections != "final":
             print("""WARNING: 'adiabatic_corrections' is an obsolete parameter. In the

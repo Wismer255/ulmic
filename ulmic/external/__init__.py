@@ -7,7 +7,7 @@ import numpy as np
 def nearest_neighbor_table(klist3d, nn):
     """ Generate table of nn nearest neighbors. """
     nk = len(klist3d.flatten())
-    nn_table = np.zeros((nk, 3, 2 * nn), int)
+    nn_table = np.zeros((nk, 3, 2 * nn), dtype=np.intp)
     size = klist3d.shape
     for ix in range(size[0]):
         for iy in range(size[1]):

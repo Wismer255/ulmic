@@ -92,7 +92,7 @@ class ObservablesManager(object):
                              self.solver.nk_range_eval, self.medium.nk_vol,
                              self.medium.volume, self.current)
 
-        evaluate_acceleration_jit(self.state.state, index, self.medium.energy.astype(complex),
+        evaluate_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
                                   self.medium.momentum, time_now, self.solver.nk_range_eval,
                                   self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
@@ -119,7 +119,7 @@ class ObservablesManager(object):
         evaluate_lvn_energy_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
                                 self.medium.momentum, time_now, self.solver.nk_range_eval, self.medium.nk_vol,
                                 self.medium.volume, self.absorbed_energy)
-        evaluate_lvn_acceleration_jit(self.state.state, index, self.medium.energy.astype(complex),
+        evaluate_lvn_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
                                       self.medium.momentum, time_now, self.solver.nk_range_eval,
                                       self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
@@ -243,7 +243,7 @@ class ObservablesManager(object):
 
     def get_forward_neighbour_table(self,nn=2):
         medium = self.medium
-        forward_neighbour_table = np.zeros((medium.nk_eval,3,nn),int)
+        forward_neighbour_table = np.zeros((medium.nk_eval,3,nn), dtype=np.intp)
         assert(medium.nk_eval == len(medium.unique_points_no_buffer))
         for i in range(medium.nk_eval):
             for alpha in range(3):

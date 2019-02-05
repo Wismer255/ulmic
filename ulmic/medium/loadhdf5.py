@@ -154,7 +154,7 @@ class LoadHdf5(object):
                 k_slice = self.klist3d[ix*size_x:(ix+1)*size_x,
                                        iy*size_y:(iy+1)*size_y,
                                        iz*size_z:(iz+1)*size_z].flatten()
-        return k_slice.astype(int)
+        return k_slice.astype(np.intp)
 
     def generate_k_buffer(self, k_slice, k_buffer_tuple):
         ''' Generate buffer of k-points around the edge if
@@ -183,7 +183,7 @@ class LoadHdf5(object):
                                            coordinates[2]]
                     if k_point not in k_slice:
                         k_buffer_points.append(k_point)
-        return np.array(k_buffer_points).astype(int)
+        return np.array(k_buffer_points).astype(np.intp)
 
     def load_energy(self, slice_k, slice_band):
         hdf5_data = h5py.File(self.input_file, 'r')

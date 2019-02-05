@@ -83,7 +83,7 @@ class Hdf5Interface:
 
     @staticmethod
     def klist3d_table(klist1d,size):
-        klist3d = np.zeros(size, int)
+        klist3d = np.zeros(size, dtype=np.intp)
         # get the shift vector
         shift_vector = size * klist1d[0, :]
         shift_vector -= np.floor(shift_vector)
@@ -98,7 +98,7 @@ class Hdf5Interface:
     def nearest_neighbour_table(klist3d, nn):
         """ Generate table of nn nearest neighbors. """
         nk = len(klist3d.flatten())
-        nn_table = np.zeros((nk, 3, 2 * nn), int)
+        nn_table = np.zeros((nk, 3, 2 * nn), dtype=np.intp)
         size = klist3d.shape
         for ix in range(size[0]):
             for iy in range(size[1]):

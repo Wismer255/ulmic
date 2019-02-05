@@ -190,10 +190,10 @@ if __name__ == "__main__":
         direction = np.eye(3, dtype=np.intp)
 
         klist1d = np.zeros((nkpts, 3))
-        klist3d = np.zeros((nk_size), int)
-        S = np.zeros((nk, 3, 2*nn, nb, nb), complex)
+        klist3d = np.zeros((nk_size), dtype=np.intp)
+        S = np.zeros((nk, 3, 2*nn, nb, nb), dtype=np.complex)
         energy = np.zeros((nk, nb))
-        nn_table = np.zeros((nk, 3, 2*nn), int)
+        nn_table = np.zeros((nk, 3, 2*nn), dtype=np.intp)
 
         np.save(output_directory+case+".gpaw.size.npy", nk_size)
         np.save(output_directory+case+".gpaw.valence.npy", nvalence)
@@ -280,7 +280,7 @@ if __name__ == "__main__":
 
 
         pair = PairDensity(calc=calc)
-        momentum = np.zeros((nkpts, nb, nb, 3), complex)
+        momentum = np.zeros((nkpts, nb, nb, 3), dtype=np.complex)
         for i in range(nkpts):
             #k = b1*calc.wfs.kd.bzk_kc[i][0] + b2*calc.wfs.kd.bzk_kc[i][1] +b3*calc.wfs.kd.bzk_kc[i][2]
             q_c = [0.0, 0.0, 0.0]
@@ -348,7 +348,7 @@ if __name__ == "__main__":
        # medium.set_min_band_index(0)
        # medium.set_k_point_reduction([8,8,4])
 
-    #    direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
+    #    direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(np.float)
     #    print([direction[q,:] for q in range(3)])
 
         #print(medium.momentum)
@@ -423,16 +423,16 @@ if __name__ == "__main__":
        # medium.set_min_band_index(0)
         medium.set_k_point_reduction(medium.size)
 
-    #    direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
+    #    direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(np.float)
     #    print([direction[q,:] for q in range(3)])
 
         # print(medium.momentum)
         # dielectric_response = DielectricResponse(medium)
         # fig,ax = dielectric_response.plot_dielectric_response_3(variable_decoherence=True)
-        # direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(float)
+        # direction = np.array([[1,1,1],[0,1,-1],[2,-1,-1]]).astype(np.float)
         # fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
 
-        # direction = np.array([[1,0,0],[0,1,0],[0,0,1]]).astype(float)
+        # direction = np.array([[1,0,0],[0,1,0],[0,0,1]]).astype(np.float)
         # fig,ax = dielectric_response.plot_dielectric_response_3(direction=direction,yaxis='log',omega=np.linspace(0.0,20.0/au.eV,4000))
         # plt.show()
         # print(medium.klist1d)

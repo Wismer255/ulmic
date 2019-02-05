@@ -45,8 +45,8 @@ def read_yambo(directory,size=None,out='out.hdf5',save='SAVE'):
         size = np.array([int(np.rint(np.max(1/klist1d[:,q][non_zeros[:,q]])))
                          for q in range(3)])
 
-    klist3d = np.zeros((size), int)
-    nn_table = np.zeros((nk, 3, 2*nn), int)
+    klist3d = np.zeros((size), dtype=np.intp)
+    nn_table = np.zeros((nk, 3, 2*nn), dtype=np.intp)
     shift_vector = size * klist1d[0, :]
     shift_vector -= np.floor(shift_vector)
     for i in range(nk):

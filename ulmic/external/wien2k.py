@@ -54,7 +54,7 @@ def read_wien2k(input_case, input_overlap=None,
         while not line.startswith('  DIVISION OF RECIPROCAL LATTICE VECTORS (INTERVALS)='):
             line = next(outputkgen)
         size = np.array(map(int,line.split()[-3:]))
-        klist3d = np.zeros(tuple(size),int)
+        klist3d = np.zeros(tuple(size), dtype=np.intp)
 
         while not line.startswith('  internal and cartesian k-vectors:'):
             line = next(outputkgen)
@@ -98,7 +98,7 @@ def read_wien2k(input_case, input_overlap=None,
 
     lattice = np.array([lv1,lv2,lv3]).T
     reciprocal_lattice = np.array([rv1,rv2,rv3]).T
-    nn_table = np.zeros((nk, 3, 2*nn), int)
+    nn_table = np.zeros((nk, 3, 2*nn), dtype=np.intp)
 
     shift_vector = size * klist1d[0, :]
     shift_vector -= np.floor(shift_vector)
@@ -138,7 +138,7 @@ def read_wien2k(input_case, input_overlap=None,
         hdf5.create_dataset("overlap", data=overlap)
 
     try:
-        momentum = np.zeros((nk,nb,nb,3),complex)
+        momentum = np.zeros((nk,nb,nb,3), dtype=np.complex)
         skip_lines = 2
         with open(input_momentum) as momentum_file:
             [next(momentum_file) for _ in range(skip_lines)]
@@ -183,7 +183,7 @@ def read_wien2k(input_case, input_overlap=None,
         dset_momentum = hdf5.create_dataset("momentum", data=momentum)
     except:
         dset_momentum = hdf5.create_dataset("momentum", (nk,nb,nb,3), dtype=np.complex128)
-        momentum = np.zeros((nb,nb,3),complex)
+        momentum = np.zeros((nb,nb,3), dtype=np.complex)
         with open(input_momentum) as momentum_file:
             skip_lines = 2
             [next(momentum_file) for _ in range(skip_lines)]

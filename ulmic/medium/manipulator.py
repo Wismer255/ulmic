@@ -109,7 +109,7 @@ class MediumManipulator(LoadHdf5):
             Currently only supports nn = 2."""
         nn = 2
         old_overlaps = np.copy(self.overlap)
-        self.overlap = np.zeros((self.nk,3,4,self.nb,self.nb),complex)
+        self.overlap = np.zeros((self.nk,3,4,self.nb,self.nb), dtype=np.complex)
         self.overlap[:,:,0,:,:] = np.copy(old_overlaps[:,:,0,:,:])
         self.overlap[:,:,-1,:,:] = np.copy(old_overlaps[:,:,-1,:,:])
         for i in range(self.nk):
@@ -162,7 +162,7 @@ class MediumManipulator(LoadHdf5):
             self.nk_local = self.nk
 
             # rest klist3d
-            self.klist3d = np.zeros(self.size,int)
+            self.klist3d = np.zeros(self.size, dtype=np.intp)
             for i in range(self.nk):
                 idx,idy,idz = indices[i,:]
                 self.klist3d[idx,idy,idz] = i
@@ -199,7 +199,7 @@ class MediumManipulator(LoadHdf5):
         return np.array([Neffx,Neffy,Neffz])/self.nk
 
     def calculate_berry_curvature_for_band(self,band_index):
-        berry_curvature = np.zeros((self.nk,3,3,),complex)
+        berry_curvature = np.zeros((self.nk,3,3,), dtype=np.complex)
         #for i in range(self.nk):
         for k in range(self.nb):
             if k != band_index:

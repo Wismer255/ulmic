@@ -7,9 +7,9 @@ class InitialState(object):
         nv = self.medium.nv
         if self.initial_state == 'ground_state':
             if self.state_object =='wave_functions':
-                self.state = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nv),complex)
+                self.state = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nv), dtype=np.complex)
             elif self.state_object =='density_matrix':
-                self.state = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nb),complex)
+                self.state = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nb), dtype=np.complex)
             for i in range(self.medium.nv):
                 self.state[:,i,i] = np.ones(self.medium.nk_local)
             return self.state

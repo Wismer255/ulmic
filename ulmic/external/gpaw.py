@@ -66,7 +66,7 @@ def read_gpaw(input_gpw,nb_max=None,spin_factor=2,
         energy[i, :] = (calc.get_eigenvalues(kpt=i, spin=0) - energy_fermi)[:nb]/au.eV
 
     if calculate_overlap:
-        overlap = np.zeros((nk, 3, 2*nn, nb, nb), complex)
+        overlap = np.zeros((nk, 3, 2*nn, nb, nb), dtype=np.complex)
         icell_cv = (2 * np.pi) * np.linalg.inv(calc.wfs.gd.cell_cv).T
         r_grid = calc.wfs.gd.get_grid_point_coordinates()
         n_grid = np.prod(np.shape(r_grid)[1:]) * (False + 1)
@@ -107,7 +107,7 @@ def read_gpaw(input_gpw,nb_max=None,spin_factor=2,
 
     if calculate_momentum:
         pair = PairDensity(calc=calc)
-        momentum = np.zeros((nk, nb, nb, 3), complex)
+        momentum = np.zeros((nk, nb, nb, 3), dtype=np.complex)
         delta_q_vector = [0.0, 0.0, 0.0]
         delta_q_descriptor = KPointDescriptor([delta_q_vector])
         plane_wave_descriptor = PWDescriptor(pair.ecut, calc.wfs.gd, complex,

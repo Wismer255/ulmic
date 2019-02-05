@@ -16,7 +16,7 @@ def evaluate_current_jit_all(rho,index,energy3d,momentum3d,time,nk_range,nk_vol,
         interaction picture using wave functions. """
 
     normalisation = (1.0/(nk_vol*volume))
-    evaluated_current = np.zeros(3,np.float64)
+    evaluated_current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -32,10 +32,10 @@ def evaluate_current_jit(rho,index,energy3d,momentum3d,time,nk_range,nk_vol,volu
                                     result_j):
     """ Evaluate the expectation value of the velocity in the
         interaction picture using wave functions. """
-    result_jk = np.zeros(3,dtype=np.float64)
+    result_jk = np.zeros(3, dtype=np.float64)
     normalisation = (1.0/(nk_vol*volume))
     nk,nb,nv = rho.shape
-    evaluated_current = np.zeros(3, np.float64)
+    evaluated_current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp( 1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -56,9 +56,9 @@ def evaluate_acceleration_jit(rho,index,energy,momentum3d,time,nk_range,nk_vol,v
     """ Evaluate the expectation value of the acceleration in the
         interaction picture using wave functions. """
     energy3d = energy.astype(np.complex128)
-    result_jk = np.zeros(3,dtype=np.float64)
+    result_jk = np.zeros(3, dtype=np.float64)
     normalisation = (1.0/(nk_vol*volume))
-    evaluated_current = np.zeros(3, np.float64)
+    evaluated_current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -79,7 +79,7 @@ def evaluate_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,nk_range,nk_
     normalisation = (1.0/(nk_vol*volume))
     electron_number = 0.0
     excitation_number = 0.0
-    conduction_band_population = np.zeros(nb-nv,np.float64)
+    conduction_band_population = np.zeros(nb-nv, dtype=np.float64)
     for k in nk_range:
         for j in range(nv):
             for i in range(nb):
@@ -144,8 +144,8 @@ def evaluate_covariant_current_jit(rho,time,S,table,energy3d,nk,lattice_vectors,
 #@jit('UniTuple(float64[:,:],2)(complex128[:,:,:],float64,complex128[:,:,:,:],complex128[:,:,:,:,:],int64[:,:,:],complex128[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(cache=not flags['--no-cache'])
 def evaluate_current_and_neff_using_berry(rho,time,momentum,S,table,energy,nk_range,lattice_vectors,periodicity,klist3d,nk_vol,volume,nv,neighbor_order=1):
-    term_current = np.zeros((len(nk_range),3),np.float64)
-    term_momentum = np.zeros((len(nk_range),3),np.float64)
+    term_current = np.zeros((len(nk_range),3), dtype=np.float64)
+    term_momentum = np.zeros((len(nk_range),3), dtype=np.float64)
 
     _,_,n3 = rho.shape
     if n3 == nv:
@@ -177,7 +177,7 @@ def evaluate_current_and_neff_using_berry(rho,time,momentum,S,table,energy,nk_ra
                  term_current[k0,alpha] = ( np.trace( np.dot( np.dot(np.conj(rho[k0,:,:]).T,rho[k0,:,:]), np.dot(np.linalg.inv(overlap_product),derivative_H))) ).real
             else:
                 VV,SS,UU = np.linalg.svd(overlap_product)
-                normalized_SS = np.ones(SS.shape,np.complex128)
+                normalized_SS = np.ones(SS.shape, dtype=np.complex128)
                 for q in range(len(SS)):
                     if SS[q] > 1e-20:
                         normalized_SS[q] = np.sqrt(1/SS[q])
@@ -223,7 +223,7 @@ def evaluate_current_using_geometric_phase(rho,time,momentum,overlap,forward_nei
 def evaluate_lvn_current_jit_all(rho,index,energy3d,momentum3d,time,nk_range,nk_vol,volume,
                                     result_jk,result_j):
     normalisation = (1.0/(nk_vol*volume))
-    current = np.zeros(3,np.float64)
+    current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -237,9 +237,9 @@ def evaluate_lvn_current_jit_all(rho,index,energy3d,momentum3d,time,nk_range,nk_
 @njit(cache=not flags['--no-cache'])
 def evaluate_lvn_current_jit(rho,index,energy3d,momentum3d,time,nk_range,nk_vol,volume,
                                     result_j):
-    result_jk = np.zeros(3,np.float64)
+    result_jk = np.zeros(3, dtype=np.float64)
     normalisation = (1.0/(nk_vol*volume))
-    current = np.zeros(3,np.float64)
+    current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -256,9 +256,9 @@ def evaluate_lvn_current_jit(rho,index,energy3d,momentum3d,time,nk_range,nk_vol,
 def evaluate_lvn_acceleration_jit(rho,index,energy,momentum3d,time,nk_range,nk_vol,volume,
                                     result_j):
     energy3d = energy.astype(np.complex128)
-    result_jk = np.zeros(3,dtype=np.float64)
+    result_jk = np.zeros(3, dtype=np.float64)
     normalisation = (1.0/(nk_vol*volume))
-    current = np.zeros(3,np.float64)
+    current = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -277,7 +277,7 @@ def evaluate_lvn_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,nk_range
     normalisation = (1.0/(nk_vol*volume))
     electron_number = 0.0
     excitation_number = 0.0
-    conduction_band_populations = np.zeros(nb-nv,np.float64)
+    conduction_band_populations = np.zeros(nb-nv, np.float64)
     for k in nk_range:
         for i in range(nb):
             electron_number += (rho[k,i,i].real)*normalisation
@@ -309,17 +309,17 @@ def evaluate_adiabatic_corrections(time,medium,pulses):
         volume = medium.volume
         nv = medium.nv
         nk = medium.nk
-        rho = np.zeros(1,1,1,complex)
+        rho = np.zeros(1,1,1, dtype=np.complex)
         NAeff[i,:] = jit_get_correction(time[i],rho,A,energy,momentum,nk_vol,volume,nv,nk)
 
 #@jit('float64[:](float64,complex128[:,:,:],float64[:],float64[:,:],complex128[:,:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(cache=not flags['--no-cache'])
 def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,nk_range):
-    rho00 = np.zeros((rho[0].shape),np.complex128)
+    rho00 = np.zeros((rho[0].shape), dtype=np.complex128)
     for i in range(nv):
         rho00[i,i] = 1.0
 
-    Neff = np.zeros(3,np.float64)
+    Neff = np.zeros(3, dtype=np.float64)
     for k in nk_range:
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
@@ -347,8 +347,8 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,nk_range):
 @njit(cache=not flags['--no-cache'])
 def evaluate_angles_for_polarisation(rho,time,S,table,energy,nk_range,lattice_vectors,periodicity,klist3d,nk_vol,volume,nv,neighbor_order=1):
     _,n,m = rho.shape
-    phases = np.zeros((len(nk_range),3),np.float64)
-    products = np.zeros((len(nk_range),3),np.complex128)
+    phases = np.zeros((len(nk_range),3), dtype=np.float64)
+    products = np.zeros((len(nk_range),3), dtype=np.complex128)
     if n == m:
         for k0 in nk_range:
             for alpha in range(3):

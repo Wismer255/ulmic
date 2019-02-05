@@ -75,7 +75,7 @@ def read_yambo(directory,size=None,out='out.hdf5',save='SAVE'):
     hdf5.create_dataset("lattice_vectors", data=lattice.T)
     hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice.T)
     hdf5.create_dataset("momentum", data=momentum)
-    hdf5.create_dataset("neighbour_table", data=nn_table)
+    # hdf5.create_dataset("neighbour_table", data=nn_table)
     hdf5.create_dataset("valence_bands", data=nv)
     hdf5.create_dataset("size", data=size)
     hdf5.create_dataset("spin_factor", data=spin_factor)

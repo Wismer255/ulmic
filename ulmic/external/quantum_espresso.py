@@ -99,14 +99,13 @@ def read_quantum_espresso(qe_file,size,output_file='out.hdf5',spin_factor=2,
     hdf5.create_dataset("klist3d", data=klist3d)
     hdf5.create_dataset("lattice_vectors", data=lattice)
     hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice)
-    hdf5.create_dataset("neighbour_table", data=nn_table)
     hdf5.create_dataset("valence_bands", data=nv)
     hdf5.create_dataset("size", data=size)
     hdf5.create_dataset("spin_factor", data=spin_factor)
 
     if not overlap_input is None:
         hdf5.create_dataset("overlap", data=overlap)
-
+        hdf5.create_dataset("neighbour_table", data=nn_table)
     if not momentum_input is None:
         hdf5.create_dataset("momentum", data=momentum)
 

@@ -16,7 +16,7 @@ class LoadHdf5(object):
     def __init__(self, input_file,
                  k_points=None, buffer_width=(0,0,0),
                  read_now=True, band_max=None,
-                 read_momentum=True, read_overlap=True,
+                 read_momentum=True, read_overlap=False,
                  logger=None,
                  **kwargs):
         """
@@ -69,7 +69,8 @@ class LoadHdf5(object):
         self.size = hdf5_data['size'][()]
         self.spin_factor = hdf5_data['spin_factor'][()]
         self.nv = hdf5_data['valence_bands'][()]
-        self.neighbour_table = hdf5_data['neighbour_table'][()]
+        if read_overlap:
+            self.neighbour_table = hdf5_data['neighbour_table'][()]
         self.volume = abs(np.dot(self.lattice_vectors[:,0],
                                  np.cross(self.lattice_vectors[:,1],self.lattice_vectors[:,2])))
         self.check_input_data()

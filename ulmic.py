@@ -301,7 +301,7 @@ if __name__ == "__main__":
         dset_momentum = hdf5.create_dataset("momentum", data=momentum)
         if not flags['--no-overlap']:
             dset_overlap = hdf5.create_dataset("overlap", data=S)
-        dset_table = hdf5.create_dataset("neighbour_table", data=nn_table)
+            dset_table = hdf5.create_dataset("neighbour_table", data=nn_table)
         dset_valence = hdf5.create_dataset("valence_bands", data=nvalence)
         dset_size = hdf5.create_dataset("size", data=nk_size)
         dset_spin = hdf5.create_dataset("spin_factor", data=spin_factor)

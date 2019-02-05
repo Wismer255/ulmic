@@ -128,7 +128,6 @@ def read_wien2k(input_case, input_overlap=None,
     hdf5.create_dataset("klist3d", data=klist3d)
     hdf5.create_dataset("lattice_vectors", data=lattice)
     hdf5.create_dataset("reciprocal_vectors",data=reciprocal_lattice)
-    hdf5.create_dataset("neighbour_table", data=nn_table)
     hdf5.create_dataset("valence_bands", data=nv)
     hdf5.create_dataset("size", data=size)
     hdf5.create_dataset("spin_factor", data=spin_factor)
@@ -136,7 +135,7 @@ def read_wien2k(input_case, input_overlap=None,
     if not input_overlap is None:
         overlap = read_mmn(input_overlap,size,klist1d,klist3d,transpose=False)
         hdf5.create_dataset("overlap", data=overlap)
-
+        hdf5.create_dataset("neighbour_table", data=nn_table)
     try:
         momentum = np.zeros((nk,nb,nb,3), dtype=np.complex)
         skip_lines = 2

@@ -26,7 +26,8 @@ class ObservablesManager(object):
 
     def init(self):
         self.initialize_arrays()
-        self.forward_neighbour_table = self.get_forward_neighbour_table()
+        if not self.solver.flags['--no-overlap']:
+            self.forward_neighbour_table = self.get_forward_neighbour_table()
         self.eval_ground_state_observables()
         self.eval_initial_state_observables()
 
@@ -127,31 +128,29 @@ class ObservablesManager(object):
     def get_covariant_current(self):
         time_now = self.solver.time_progression
         current_mixed_j1, current_mixed_neff1 = evaluate_current_and_neff_using_berry(self.state.state, time_now,
-                                                                                      self.medium.momentum,
-                                                                                      self.medium.overlap,
-                                                                                      self.forward_neighbour_table,
-                                                                                      self.medium.energy.astype(
-                                                                                          np.complex128),
-                                                                                      self.solver.nk_range_eval,
-                                                                                      self.medium.lattice_vectors,
-                                                                                      self.medium.size,
-                                                                                      self.medium.klist3d,
-                                                                                      self.medium.nk_vol,
-                                                                                      self.medium.volume,
-                                                                                      self.medium.nv, 1)
+                                                self.medium.momentum,
+                                                self.medium.overlap,
+                                                self.forward_neighbour_table,
+                                                self.medium.energy.astype(np.complex128),
+                                                self.solver.nk_range_eval,
+                                                self.medium.lattice_vectors,
+                                                self.medium.size,
+                                                self.medium.klist3d,
+                                                self.medium.nk_vol,
+                                                self.medium.volume,
+                                                self.medium.nv, 1)
         current_mixed_j2, current_mixed_neff2 = evaluate_current_and_neff_using_berry(self.state.state, time_now,
-                                                                                      self.medium.momentum,
-                                                                                      self.medium.overlap,
-                                                                                      self.forward_neighbour_table,
-                                                                                      self.medium.energy.astype(
-                                                                                          np.complex128),
-                                                                                      self.solver.nk_range_eval,
-                                                                                      self.medium.lattice_vectors,
-                                                                                      self.medium.size,
-                                                                                      self.medium.klist3d,
-                                                                                      self.medium.nk_vol,
-                                                                                      self.medium.volume,
-                                                                                      self.medium.nv, 2)
+                                                self.medium.momentum,
+                                                self.medium.overlap,
+                                                self.forward_neighbour_table,
+                                                self.medium.energy.astype(np.complex128),
+                                                self.solver.nk_range_eval,
+                                                self.medium.lattice_vectors,
+                                                self.medium.size,
+                                                self.medium.klist3d,
+                                                self.medium.nk_vol,
+                                                self.medium.volume,
+                                                self.medium.nv, 2)
         return (1 / (2 * np.pi * self.medium.volume)) * np.dot(self.medium.lattice_vectors,
                                     np.sum((4.0 / 3.0) * current_mixed_j1 - (1.0 / 6.0) * current_mixed_j2, axis=0)
                                     / np.array([ self.medium.size[1] *self.medium.size[2],
@@ -162,56 +161,37 @@ class ObservablesManager(object):
         time_now = self.solver.time_progression
         index = self.solver.index_progression
         current_products_k = evaluate_angles_for_polarisation(self.state.state, time_now, self.medium.overlap,
-                                                              self.medium.neighbour_table, self.medium.energy,
-                                                              self.solver.nk_range_eval,
-                                                              self.medium.lattice_vectors,
-                                                              self.medium.size, self.medium.klist3d,
-                                                              self.medium.nk_vol, self.medium.volume,
-                                                              self.medium.nv, 1)
+                                self.medium.neighbour_table, self.medium.energy,
+                                self.solver.nk_range_eval,
+                                self.medium.lattice_vectors,
+                                self.medium.size, self.medium.klist3d,
+                                self.medium.nk_vol, self.medium.volume,
+                                self.medium.nv, 1)
         if index == 0:
             current_angles_k = np.log(current_products_k).imag
         else:
             current_angles_k = np.log((current_products_k) / self._previous_products_k).imag + self._previous_angles_k
         self.geometric_polarisation_1st[index, :] = (1 / (2 * np.pi * self.medium.volume)) * np.dot(self.medium.lattice_vectors,
-                                                                                          np.sum(current_angles_k,
-                                                                                                 axis=0) / np.array([
-                                                                                              self.medium.size[
-                                                                                                  1] *
-                                                                                              self.medium.size[
-                                                                                                  2],
-                                                                                              self.medium.size[
-                                                                                                  0] *
-                                                                                              self.medium.size[
-                                                                                                  2],
-                                                                                              self.medium.size[
-                                                                                                  0] *
-                                                                                              self.medium.size[
-                                                                                                  1]]))
+                np.sum(current_angles_k,
+                       axis=0) / np.array([self.medium.size[1] *
+                    self.medium.size[2],
+                    self.medium.size[0] * self.medium.size[2],
+                    self.medium.size[0] * self.medium.size[1]]))
 
         current_products_k2 = evaluate_angles_for_polarisation(self.state.state, time_now, self.medium.overlap,
-                                                               self.medium.neighbour_table, self.medium.energy,
-                                                               self.solver.nk_range_eval, self.medium.lattice_vectors,
-                                                               self.medium.size, self.medium.klist3d,
-                                                               self.medium.nk_vol, self.medium.volume, self.medium.nv, 2)
+                    self.medium.neighbour_table, self.medium.energy,
+                    self.solver.nk_range_eval, self.medium.lattice_vectors,
+                    self.medium.size, self.medium.klist3d,
+                    self.medium.nk_vol, self.medium.volume, self.medium.nv, 2)
         if index == 0:
             current_angles_k2 = np.log(current_products_k2).imag
         if index > 0:
             current_angles_k2 = np.log((current_products_k2) / self._previous_products_k2).imag + self._previous_angles_k2
         self.geometric_polarisation_2nd[index, :] = (1 / (2 * np.pi * self.medium.volume)) * np.dot(self.medium.lattice_vectors,
-                                                                                          np.sum(current_angles_k2,
-                                                                                                 axis=0) / np.array([
-                                                                                              self.medium.size[
-                                                                                                  1] *
-                                                                                              self.medium.size[
-                                                                                                  2],
-                                                                                              self.medium.size[
-                                                                                                  0] *
-                                                                                              self.medium.size[
-                                                                                                  2],
-                                                                                              self.medium.size[
-                                                                                                  0] *
-                                                                                              self.medium.size[
-                                                                                                  1]]))
+                    np.sum(current_angles_k2,
+                           axis=0) / np.array([self.medium.size[1] *
+                        self.medium.size[2], self.medium.size[0] *
+                        self.medium.size[2], self.medium.size[0] * self.medium.size[1]]))
         self._previous_products_k = np.copy(current_products_k)
         self._previous_products_k2 = np.copy(current_products_k2)
         self._previous_angles_k = np.copy(current_angles_k)

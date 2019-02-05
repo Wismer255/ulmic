@@ -97,7 +97,7 @@ class LocalPotential1D:
             deviation = sum(abs(potential_fine-potential_coarse))
             if self.neighbors_for_convergence > MAX_ITERATIONS_NEIGHBORS:
                 error = "MAX_ITERATIONS_NEIGHBORS reached: {:d}".format(self.neighbors_for_convergence)
-                raise ValueError(error)
+                raise RuntimeError(error)
         self.neighbors_converged = True
 
 

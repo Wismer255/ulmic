@@ -85,15 +85,15 @@ if __name__ == "__main__":
         try:
             input_format = sys.argv[sys.argv.index('convert')+1]
         except:
-            raise('No input format specified!')
+            raise ValueError('No input format specified!')
         try:
             input_file = sys.argv[sys.argv.index('convert')+2]
         except:
-            raise('No input file specified!')
+            raise ValueError('No input file specified!')
         try:
             output_directory = sys.argv[sys.argv.index('convert')+3]
         except:
-            raise('No output directory specified!')
+            raise ValueError('No output directory specified!')
         try:
             optional_arguments = sys.argv[sys.argv.index('convert')+4:]
             options = {}
@@ -109,11 +109,11 @@ if __name__ == "__main__":
         try:
             input_data = sys.argv[sys.argv.index('analyse')+1]
         except:
-            raise('No input data specified!')
+            raise ValueError('No input data specified!')
         try:
             output_directory = sys.argv[sys.argv.index('analyse')+2]
         except:
-            raise('No output directory specified!')
+            raise ValueError('No output directory specified!')
         try:
             optional_arguments = sys.argv[sys.argv.index('analyse')+3:]
             options = {}

@@ -61,7 +61,7 @@ class LoadHdf5(object):
         elif os.path.isfile(os.path.join(ue.get_data_dir(),input_file)):
             hdf5_data = h5py.File(os.path.join(ue.get_data_dir(),input_file), 'r')
         else:
-            raise(ValueError('File {} not found'.format(input_file)))
+            raise RuntimeError('File {} not found'.format(input_file))
         self.klist1d = hdf5_data['klist1d'][()]
         self.klist3d = hdf5_data['klist3d'][()]
         self.lattice_vectors = hdf5_data['lattice_vectors'][()]

@@ -37,14 +37,14 @@ class SolverManager:
             elif isinstance(arg,list) or isinstance(arg,tuple):
                 self.set_flags(*tuple(arg))
             else:
-                raise (ValueError('Flag {} not recognized '.format(arg)))
+                raise ValueError('Flag {} not recognized '.format(arg))
         return
 
     def _set_flag(self,arg):
         if arg in self.flags:
             self.flags[arg] = True
         else:
-            raise (ValueError('Flag {} not recognized'.format(arg)) )
+            raise ValueError('Flag {} not recognized'.format(arg))
 
     def set_options(self,*args,**kwargs):
         """ Pass a dictionary with options or pass options as keywords """
@@ -52,13 +52,13 @@ class SolverManager:
             if isinstance(arg,dict):
                 self.set_options(**arg)
             else:
-                raise(ValueError,'Argument type not recognized')
+                raise ValueError('Argument type not recognized')
 
         for kwarg in kwargs:
             if kwarg in self.options:
                 self.options[kwarg] = kwargs[kwarg]
             else:
-                raise(ValueError, 'unknown option: {}'.format(kwarg))
+                raise ValueError('unknown option: {}'.format(kwarg))
 
     def load_default_parameters(self,flags,options):
 

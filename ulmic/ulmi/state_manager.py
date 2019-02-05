@@ -70,7 +70,7 @@ class StateManager(InitialState):
             if self.state.shape == self.initial_state.shape:
                 state = np.copy(self.initial_state)
             else:
-                raise (ValueError,"Shape of input is inconsistent.")
+                raise ValueError("Shape of input is inconsistent.")
         return state
 
     def propagate_solution(self,):
@@ -270,7 +270,7 @@ class StateManager(InitialState):
             self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
             if self.dt_now < self.solver.options['time_step_min']:
                 if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
-                    raise (ValueError('Time step is below dt_tolerance!'))
+                    raise RuntimeError('Time step is below dt_tolerance!')
                 self.force_propagation = True
                 warnings.warn('Time step is below dt_tolerance! Forcing advancement')
         return is_accepted

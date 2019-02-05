@@ -28,7 +28,7 @@ class Hdf5Interface:
             if kwarg in self.variables:
                 self.variables[kwarg] = kwargs[kwarg]
             else:
-                raise('Keyword {} not recognized'.format(kwarg))
+                raise ValueError('Keyword {} not recognized'.format(kwarg))
 
     def check_variables(self,):
 

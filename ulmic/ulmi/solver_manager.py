@@ -24,7 +24,8 @@ class SolverManager:
     def set_managers(self, parallel_manager=None):
         self.parallel = parallel_manager
 
-    def init(self):
+    def init(self): # this function is supposed to be called after setting
+                    # all the flags and options
         self.nk_range_eval = self.parallel.get_eval_k_mesh()
         self.time_progression = self.time_out[0]
         self.index_progression = 0
@@ -32,6 +33,7 @@ class SolverManager:
         self.total_number_of_steps = 0
         if str(self.options['time_step']).lower() == 'auto':
             self.default_dt = np.mean(np.diff(self.time_in)) # it may change later
+            self.options['time_step_min'] = min(self.default_dt, self.options['time_step_min'])
         elif type(self.options['time_step']) == float:
             self.default_dt = self.options['time_step']
             self.division_counter = 0
@@ -95,7 +97,8 @@ class SolverManager:
                     print('ulmi: Unrecognized option')
         self.options = default_options
 
-        self.time_step_min = self.options['time_step_min']
+        # self.time_step_min = self.options['time_step_min']
+        self.default_dt = max(self.default_dt, self.options['time_step_min'])
         self.relative_error_tolerance = self.options['relative_error_tolerance']
         self.timestamp = int(time_module.time())
         self.tolerance_zero_field = self.options['tolerance_zero_field']

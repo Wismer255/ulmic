@@ -124,6 +124,7 @@ class StateManager(InitialState):
                         raise RuntimeError('Time step is below dt_tolerance!')
                     self.force_propagation = True
                     warnings.warn('Time step is below dt_tolerance! Forcing advancement')
+                    self.dt_now = self.solver.options['time_step_min']
 
             self.dt_now = min(self.dt_now, self.solver.default_dt - self.cumulative_dt)
 

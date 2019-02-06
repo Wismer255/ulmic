@@ -7,31 +7,26 @@ import pprint
 flags = {
     '--verbose':False,
     '--help': False,
-    '--debug':False,
     '--no-vg-correction':False,
     '--no-berry':False,
     '--no-overlap': False,
     '--no-covariant': False,
-    '--plot-test-result':False,
     '--print-timestep':True,
     '--no-cache':False,
-    '--use-dp45':True,
     '--dt-break':False,
-    '--use-mpi':False,
     '--dump-state':False,
-    '--use-neff-simplest':False,
-    '--load-dipole':False,
     '--constant-time-step':False,
     '--energy-independent-decoherence': False,
 }
+    # '--use-mpi':False,
 
 options = {
-           'time_step_min':1e-8,
-           'tolerance_zero_field': 1e-16,
-           'tolerance_zero_potential':1e-16,
-           'tolerance_relative_error':1e-6,
-           'tolerance_absolute_error':1e-20,
-          }
+    'time_step_min':1e-8,
+    'tolerance_zero_field': 1e-16,
+    'tolerance_zero_potential':1e-16,
+    'tolerance_relative_error':1e-6,
+    'tolerance_absolute_error':1e-20,
+}
 
 for arg in sys.argv:
     if arg.startswith('--'):

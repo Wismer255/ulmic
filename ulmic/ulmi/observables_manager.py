@@ -75,9 +75,9 @@ class ObservablesManager:
 
         self.primitive_electron_number[index] = self.electron_number[index]*self.pulses.eval_potential_fast(time_now)
         if self.solver.flags['--no-vg-correction']:
-          self.effective_electron_number[index] = self.primitive_electron_number[index]
+            self.effective_electron_number[index] = self.primitive_electron_number[index]
         else:
-          self.effective_electron_number[index] = self.get_effective_electron_number()
+            self.effective_electron_number[index] = self.get_effective_electron_number()
 
     def get_effective_electron_number(self):
         if not self.solver.flags['--no-vg-correction']:

@@ -97,7 +97,6 @@ class SolverManager:
                     print('ulmi: Unrecognized option')
         self.options = default_options
 
-        # self.time_step_min = self.options['time_step_min']
         self.default_dt = max(self.default_dt, self.options['time_step_min'])
         self.relative_error_tolerance = self.options['relative_error_tolerance']
         self.timestamp = int(time_module.time())

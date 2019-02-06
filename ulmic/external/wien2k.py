@@ -1,6 +1,5 @@
 
 """ Python script for processing Wien2k data. """
-from __future__ import print_function
 import os
 import h5py
 import numpy as np

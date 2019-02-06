@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 from numpy.linalg import eigh
 from numba import jit, njit, prange

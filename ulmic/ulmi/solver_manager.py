@@ -10,7 +10,9 @@ class SolverManager:
 
         self.time_in = time_in
         self.time_out = time_in
-        self.counter = 0
+        self.division_counter = 0
+        self.accepted_step_counter = 0 # counts how many steps have been taken without
+                                       # changing the time step
         self.total_number_of_steps = 0
         self.nt_out = len(self.time_out)
         self.default_dt = None # it will be initialized later
@@ -29,10 +31,10 @@ class SolverManager:
         self.set_field_directions()
         self.total_number_of_steps = 0
         if str(self.options['time_step']).lower() == 'auto':
-            self.default_dt = np.mean(np.diff(time_in)) # it may change later
+            self.default_dt = np.mean(np.diff(self.time_in)) # it may change later
         elif type(self.options['time_step']) == float:
             self.default_dt = self.options['time_step']
-            self.counter = 0
+            self.division_counter = 0
             assert(self.default_dt > 0.0)
         else:
             raise ValueError("time_step must be either 'auto' or a floating-point number")

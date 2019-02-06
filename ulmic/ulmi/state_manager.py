@@ -50,7 +50,7 @@ class StateManager(InitialState):
             self.force_propagation = True
             if self.solver.default_dt != self.solver.options['time_step']:
                 raise RuntimeError("Call SolverManager.init after setting options")
-            assert(self.solver.counter == 0)
+            assert(self.solver.division_counter == 0)
         else:
             raise ValueError("time_step must be either 'auto' or a floating-point number")
 
@@ -81,7 +81,7 @@ class StateManager(InitialState):
     def propagate_solution(self,):
         """ Propagate over a time interval of self.solver.default_dt """
         self.time_now = self.solver.time_progression
-        self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
+        self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
         self.cumulative_dt = 0.0
 
         while True:
@@ -104,8 +104,27 @@ class StateManager(InitialState):
                     tmp_state, tmp_abs_error, tmp_rel_error = self.solve_lvn_vg()
 
             if self.check_solution(tmp_state, tmp_abs_error, tmp_rel_error):
-                if self.solver.default_dt - self.cumulative_dt < 1e-8 * self.dt_now:
+                # see if the propagation inteval is over
+                if self.solver.default_dt - self.cumulative_dt < 1e-14 * self.dt_now:
                     break
+                # see if it's time to increase the time step
+                if self.solver.division_counter > 0 and \
+                        str(self.solver.options['time_step']).lower() == 'auto' and \
+                        self.solver.accepted_step_counter >= 100:
+                    self.dt_now *= 2
+                    self.solver.division_counter -= 1
+                    self.solver.accepted_step_counter = 0
+            else:
+                # reduce the time step
+                self.solver.division_counter += 1
+                self.solver.accepted_step_counter = 0
+                self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
+                if self.dt_now < self.solver.options['time_step_min']:
+                    if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
+                        raise RuntimeError('Time step is below dt_tolerance!')
+                    self.force_propagation = True
+                    warnings.warn('Time step is below dt_tolerance! Forcing advancement')
+
             self.dt_now = min(self.dt_now, self.solver.default_dt - self.cumulative_dt)
 
 
@@ -176,7 +195,7 @@ class StateManager(InitialState):
                                                                              self.time_now))))
         reciprocal_dt_Courant = max(reciprocal_dt_Courant, reciprocal_dt_Courant_int)
         if reciprocal_dt_Courant > 1e-8:
-            minimum_counter_exponent = max(self.counter, np.ceil(np.log2(self.default_dt * reciprocal_dt_Courant)))
+            minimum_counter_exponent = max(self.division_counter, np.ceil(np.log2(self.default_dt * reciprocal_dt_Courant)))
         return minimum_counter_exponent
 
     def solve_tdse_lg(self):
@@ -267,12 +286,6 @@ class StateManager(InitialState):
                 self.result_absolute_error[index] = tmp_abs_error
             if tmp_rel_error > self.result_relative_error[index]:
                 self.result_relative_error[index] = tmp_rel_error
-        else:
-            self.solver.counter += 1
-            self.dt_now = self.solver.default_dt / (2 ** self.solver.counter)
-            if self.dt_now < self.solver.options['time_step_min']:
-                if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
-                    raise RuntimeError('Time step is below dt_tolerance!')
-                self.force_propagation = True
-                warnings.warn('Time step is below dt_tolerance! Forcing advancement')
+            self.solver.accepted_step_counter += 1
+
         return is_accepted

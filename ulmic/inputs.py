@@ -5,27 +5,27 @@ import sys
 import pprint
 
 flags = {
-    '--verbose':False,
+    '--verbose': False,
     '--help': False,
-    '--no-vg-correction':False,
-    '--no-berry':False,
+    '--no-vg-correction': False,
+    '--no-berry': False,
     '--no-overlap': False,
     '--no-covariant': False,
-    '--print-timestep':True,
-    '--no-cache':False,
-    '--dt-break':False,
-    '--dump-state':False,
-    '--constant-time-step':False,
+    '--print-timestep': True,
+    '--no-cache': False,
+    '--dt-break': False,
+    '--dump-state': False,
     '--energy-independent-decoherence': False,
 }
     # '--use-mpi':False,
 
 options = {
-    'time_step_min':1e-8,
+    'time_step': 'auto',
+    'time_step_min': 1e-8,
     'tolerance_zero_field': 1e-16,
-    'tolerance_zero_potential':1e-16,
-    'tolerance_relative_error':1e-6,
-    'tolerance_absolute_error':1e-20,
+    'tolerance_zero_potential': 1e-16,
+    'tolerance_relative_error': 1e-6,
+    'tolerance_absolute_error': 1e-20,
 }
 
 for arg in sys.argv:

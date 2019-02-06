@@ -8,7 +8,6 @@ class SimulationBatch():
 
     flags = []
     options = {}
-    #flags.append('--constant-time-step')
     rtol = 5e-2
     ptol = 1e-2
     atol = 1e-13

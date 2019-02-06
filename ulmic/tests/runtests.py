@@ -41,7 +41,7 @@ class TestImports():
 
     # def test_ulmi_susceptibility(self):
     #     batch = SimulationBatch(*args)
-    #     batch.flags = ['--constant-time-step']
+    #     batch.options['time_step'] = 'auto'
     #     batch.pulses.variables[0]['E0'] = 0.00001
     #     results = batch.get_results()
     #     for result in results:
@@ -54,12 +54,12 @@ class TestImports():
 
     # def test_ulmi_susceptibility_all(self):
     #     batch = SimulationBatch(*args)
-    #     batch.flags = ['--constant-time-step']
+    #     batch.options['time_step'] = 'auto'
     #     batch.pulses.variables[0]['E0'] = 0.000001
     #     results = batch.run_all()
 
     def test_ulmi_susceptibility_all(self):
         batch = SimulationBatch(*args)
-        batch.options = {'tolerance_relative_error':1e-2}
+        batch.options['tolerance_relative_error'] = 1e-2
         batch.pulses.variables[0]['E0'] = 0.000001
         results = batch.run_all()

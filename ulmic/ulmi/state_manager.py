@@ -42,12 +42,17 @@ class StateManager(InitialState):
         self.result_relative_error = np.zeros(self.solver.nt_out)
         self.decoherence_exponents = self.get_time_independent_decoherence_operator()
         self.explicit_solver_scheme = 'dp45'
-        if self.solver.flags['--constant-time-step']:
-            # self.explicit_solver_scheme = 'rk4'
-            self.force_propagation = True
-        else:
+        if str(self.solver.options['time_step']).lower() == 'auto':
             # self.explicit_solver_scheme = 'dp45'
             self.force_propagation = False
+        elif type(self.solver.options['time_step']) == float:
+            # self.explicit_solver_scheme = 'rk4'
+            self.force_propagation = True
+            if self.solver.default_dt != self.solver.options['time_step']:
+                raise RuntimeError("Call SolverManager.init after setting options")
+            assert(self.solver.counter == 0)
+        else:
+            raise ValueError("time_step must be either 'auto' or a floating-point number")
 
         if self.equation in ['tdse','stdse']:
             self.state_object = 'wave_functions'
@@ -99,12 +104,9 @@ class StateManager(InitialState):
                     tmp_state, tmp_abs_error, tmp_rel_error = self.solve_lvn_vg()
 
             if self.check_solution(tmp_state, tmp_abs_error, tmp_rel_error):
-                if self.solver.default_dt - self.cumulative_dt < 0.75 * self.dt_now:
-                    # since self.solver.default_dt is always an integer
-                    # multiple of self.dt_now, the above condition means that
-                    # the final substep has been successfully accomplished
+                if self.solver.default_dt - self.cumulative_dt < 1e-8 * self.dt_now:
                     break
-
+            self.dt_now = min(self.dt_now, self.solver.default_dt - self.cumulative_dt)
 
 
     def field_is_zero(self,):

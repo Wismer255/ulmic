@@ -6,14 +6,14 @@ from ulmic.inputs import options as default_options
 
 class SolverManager:
 
-    def __init__(self,time_in,pulses):
+    def __init__(self, time_in, pulses):
 
         self.time_in = time_in
         self.time_out = time_in
         self.counter = 0
         self.total_number_of_steps = 0
         self.nt_out = len(self.time_out)
-        self.default_dt = np.mean(np.diff(time_in))
+        self.default_dt = None # it will be initialized later
 
         self.flags = dict(default_flags)
         self.options = dict(default_options)
@@ -28,6 +28,14 @@ class SolverManager:
         self.index_progression = 0
         self.set_field_directions()
         self.total_number_of_steps = 0
+        if str(self.options['time_step']).lower() == 'auto':
+            self.default_dt = np.mean(np.diff(time_in)) # it may change later
+        elif type(self.options['time_step']) == float:
+            self.default_dt = self.options['time_step']
+            self.counter = 0
+            assert(self.default_dt > 0.0)
+        else:
+            raise ValueError("time_step must be either 'auto' or a floating-point number")
 
     def set_flags(self,*args):
         """ Pass flags (strings) or a list of flags (list of strings)"""

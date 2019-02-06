@@ -84,44 +84,44 @@ class ObservablesManager:
             return jit_get_correction(self.solver.time_progression, self.state.state,
                                       self.pulses.eval_potential_fast(self.solver.time_progression),
                                       self.medium.energy, self.medium.momentum, self.medium.nk_vol,
-                                      self.medium.volume, self.medium.nv, self.solver.nk_range_eval)
+                                      self.medium.volume, self.medium.nv, self.solver.nk_mesh)
 
     def eval_operator_quantities_wf(self):
         time_now = self.solver.time_progression
         index = self.solver.index_progression
         evaluate_current_jit(self.state.state, index, self.medium.energy, self.medium.momentum, time_now,
-                             self.solver.nk_range_eval, self.medium.nk_vol,
+                             self.solver.nk_mesh, self.medium.nk_vol,
                              self.medium.volume, self.current)
 
         evaluate_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
-                                  self.medium.momentum, time_now, self.solver.nk_range_eval,
+                                  self.medium.momentum, time_now, self.solver.nk_mesh,
                                   self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
         evaluate_electrons_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
-                               self.medium.momentum, time_now, self.solver.nk_range_eval, self.medium.nk_vol,
+                               self.medium.momentum, time_now, self.solver.nk_mesh, self.medium.nk_vol,
                                self.medium.volume, self.electron_number, self.excitation_number,
                                self.conduction_band_populations)
 
         evaluate_energy_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
-                            self.medium.momentum, time_now, self.solver.nk_range_eval, self.medium.nk_vol,
+                            self.medium.momentum, time_now, self.solver.nk_mesh, self.medium.nk_vol,
                             self.medium.volume, self.absorbed_energy)
 
     def eval_operator_quantities_dm(self):
         time_now = self.solver.time_progression
         index = self.solver.index_progression
         evaluate_lvn_current_jit(self.state.state, index, self.medium.energy, self.medium.momentum, time_now,
-                                 self.solver.nk_range_eval, self.medium.nk_vol, self.medium.volume, self.current)
+                                 self.solver.nk_mesh, self.medium.nk_vol, self.medium.volume, self.current)
 
         evaluate_lvn_electrons_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
-                                   self.medium.momentum, time_now, self.solver.nk_range_eval,
+                                   self.medium.momentum, time_now, self.solver.nk_mesh,
                                    self.medium.nk_vol, self.medium.volume, self.electron_number,
                                    self.excitation_number, self.conduction_band_populations)
 
         evaluate_lvn_energy_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
-                                self.medium.momentum, time_now, self.solver.nk_range_eval, self.medium.nk_vol,
+                                self.medium.momentum, time_now, self.solver.nk_mesh, self.medium.nk_vol,
                                 self.medium.volume, self.absorbed_energy)
         evaluate_lvn_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
-                                      self.medium.momentum, time_now, self.solver.nk_range_eval,
+                                      self.medium.momentum, time_now, self.solver.nk_mesh,
                                       self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
 
@@ -132,7 +132,7 @@ class ObservablesManager:
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,
                                                 self.medium.energy.astype(np.complex128),
-                                                self.solver.nk_range_eval,
+                                                self.solver.nk_mesh,
                                                 self.medium.lattice_vectors,
                                                 self.medium.size,
                                                 self.medium.klist3d,
@@ -144,7 +144,7 @@ class ObservablesManager:
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,
                                                 self.medium.energy.astype(np.complex128),
-                                                self.solver.nk_range_eval,
+                                                self.solver.nk_mesh,
                                                 self.medium.lattice_vectors,
                                                 self.medium.size,
                                                 self.medium.klist3d,
@@ -162,7 +162,7 @@ class ObservablesManager:
         index = self.solver.index_progression
         current_products_k = evaluate_angles_for_polarisation(self.state.state, time_now, self.medium.overlap,
                                 self.medium.neighbour_table, self.medium.energy,
-                                self.solver.nk_range_eval,
+                                self.solver.nk_mesh,
                                 self.medium.lattice_vectors,
                                 self.medium.size, self.medium.klist3d,
                                 self.medium.nk_vol, self.medium.volume,
@@ -180,7 +180,7 @@ class ObservablesManager:
 
         current_products_k2 = evaluate_angles_for_polarisation(self.state.state, time_now, self.medium.overlap,
                     self.medium.neighbour_table, self.medium.energy,
-                    self.solver.nk_range_eval, self.medium.lattice_vectors,
+                    self.solver.nk_mesh, self.medium.lattice_vectors,
                     self.medium.size, self.medium.klist3d,
                     self.medium.nk_vol, self.medium.volume, self.medium.nv, 2)
         if index == 0:

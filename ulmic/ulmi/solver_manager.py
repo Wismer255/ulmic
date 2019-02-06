@@ -26,7 +26,7 @@ class SolverManager:
 
     def init(self): # this function is supposed to be called after setting
                     # all the flags and options
-        self.nk_range_eval = self.parallel.get_eval_k_mesh()
+        self.nk_mesh = self.parallel.get_eval_k_mesh()
         self.time_progression = self.time_out[0]
         self.index_progression = 0
         self.set_field_directions()

@@ -110,7 +110,7 @@ class StateManager(InitialState):
                 # see if it's time to increase the time step
                 if self.solver.division_counter > 0 and \
                         str(self.solver.options['time_step']).lower() == 'auto' and \
-                        self.solver.accepted_step_counter >= 100:
+                        self.solver.accepted_step_counter >= 10:
                     self.dt_now *= 2
                     self.solver.division_counter -= 1
                     self.solver.accepted_step_counter = 0

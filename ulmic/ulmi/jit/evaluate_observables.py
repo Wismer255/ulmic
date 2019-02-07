@@ -34,14 +34,15 @@ def evaluate_current_jit(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,re
     normalisation = 1.0 / (nk_vol*volume)
     nk,nb,nv = rho.shape
     result_jk = np.zeros((3,N_k,nv), dtype=np.float64)
+    rho_conjugate = np.conj(rho)
     for k in prange(N_k):
         v1 = np.exp( 1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
         for i in range(nv):
             Z1 = rho[k,:,i]
-            Z2 = Z1.conj()
-            norm = np.dot(rho[k,:,i].conj(),rho[k,:,i]).real
+            Z2 = rho_conjugate[k,:,i]
+            norm = np.dot(Z2,Z1).real
             result_jk[0,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,0],Z1)).real
             result_jk[1,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,1],Z1)).real
             result_jk[2,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,2],Z1)).real

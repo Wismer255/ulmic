@@ -54,8 +54,8 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
                        +momentum3d[k,:,:,2]*As[i,2])*mask
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
 
-        non_hermitian = np.dot((1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian,
-                              (1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian)
+        Z = np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian
+        non_hermitian = np.dot(Z, Z)
         drho[i] += -0.5*gamma*np.dot(non_hermitian, tmp_rho)
 
 
@@ -85,7 +85,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
             Hamiltonian = (momentum3d[k,:,:,0]*As[0,0]
                            +momentum3d[k,:,:,1]*As[0,1]
                            +momentum3d[k,:,:,2]*As[0,2])*mask
-            rho_out[:,i] = np.dot((1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian,rho[:,i])
+            rho_out[:,i] = np.dot(np.diag(energy3d[k,:]).astype(np.complex128)+Hamiltonian, rho[:,i])
             jump_occured = True
         else:
             rho_out[:,i] = rho[:,i] + out5[:,i]
@@ -204,7 +204,8 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
         drho[i] += np.conj(drho[i].T)
-        drho[i] += gamma*lindblad_term(tmp_rho,(1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian)
+        drho[i] += gamma*lindblad_term(tmp_rho,
+            np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian)
 
     out5 = np.zeros((n,m), dtype=np.complex128)
     error = np.zeros((n,m), dtype=np.complex128)
@@ -225,7 +226,8 @@ def jit_step_vg_lvn_dp45(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
     absolute_error = np.zeros(nk)
     relative_error = np.zeros(nk)
     for k in prange(nk):
-        rho_out5[k,:,:], ae, re = jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
+        rho_out5[k,:,:], ae, re = \
+            jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
         # ae = np.max(np.abs(rho_out5[k,:,:]-np.conj(rho_out5[k,:,:].T)))
         absolute_error[k] = ae
         relative_error[k] = re

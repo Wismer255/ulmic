@@ -20,9 +20,10 @@ def evaluate_current_jit_all(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volum
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
-        result_jk[index,k,0] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*momentum3d[k,:,:,0],rho[k]))).real
-        result_jk[index,k,1] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*momentum3d[k,:,:,1],rho[k]))).real
-        result_jk[index,k,2] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*momentum3d[k,:,:,2],rho[k]))).real
+        rho_k_H = rho[k].conj().T
+        result_jk[index,k,0] = np.trace(np.dot(rho_k_H, np.dot(mask_int*momentum3d[k,:,:,0],rho[k]))).real
+        result_jk[index,k,1] = np.trace(np.dot(rho_k_H, np.dot(mask_int*momentum3d[k,:,:,1],rho[k]))).real
+        result_jk[index,k,2] = np.trace(np.dot(rho_k_H, np.dot(mask_int*momentum3d[k,:,:,2],rho[k]))).real
         result_jk[index,k,:] *= -normalisation
     result_j[index, :] = np.sum(result_jk[index,:,:], axis=0)
 
@@ -40,12 +41,12 @@ def evaluate_current_jit(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,re
         v2 = np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
         for i in range(nv):
-            Z1 = rho[k,:,i]
-            Z2 = rho_conjugate[k,:,i]
-            norm = np.dot(Z2,Z1).real
-            result_jk[0,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,0],Z1)).real
-            result_jk[1,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,1],Z1)).real
-            result_jk[2,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,2],Z1)).real
+            rho_k = rho[k,:,i]
+            rho_k_conjugate = rho_conjugate[k,:,i]
+            norm = np.dot(rho_k_conjugate,rho_k).real
+            result_jk[0,k,i] = np.dot(rho_k_conjugate, np.dot(mask_int*momentum3d[k,:,:,0],rho_k)).real
+            result_jk[1,k,i] = np.dot(rho_k_conjugate, np.dot(mask_int*momentum3d[k,:,:,1],rho_k)).real
+            result_jk[2,k,i] = np.dot(rho_k_conjugate, np.dot(mask_int*momentum3d[k,:,:,2],rho_k)).real
             result_jk[:,k,i] /= norm
     result_j[index,:] = -normalisation * np.sum(np.sum(result_jk, axis=-1), axis=-1)
 
@@ -62,9 +63,11 @@ def evaluate_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,volume
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = v1.conj() # np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
-        result_jk[0,k] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,0],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,0]) ),rho[k]))).real
-        result_jk[1,k] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,1],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,1]) ),rho[k]))).real
-        result_jk[2,k] = np.trace(np.dot(rho[k].conj().T,np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,2],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,2]) ),rho[k]))).real
+        rho_k_H = rho[k].conj().T
+        E_k = np.diag(energy3d[k,:])
+        result_jk[0,k] = np.trace(np.dot(rho_k_H, np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,0],E_k)-np.dot(E_k,momentum3d[k,:,:,0]) ),rho[k]))).real
+        result_jk[1,k] = np.trace(np.dot(rho_k_H, np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,1],E_k)-np.dot(E_k,momentum3d[k,:,:,1]) ),rho[k]))).real
+        result_jk[2,k] = np.trace(np.dot(rho_k_H, np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,2],E_k)-np.dot(E_k,momentum3d[k,:,:,2]) ),rho[k]))).real
     result_j[index,:] = - np.sum(result_jk, axis=1) * normalisation
 
 
@@ -127,7 +130,9 @@ def evaluate_covariant_current_jit(rho,time,S,table,energy3d,nk,lattice_vectors,
             Sinv2 = np.linalg.pinv(S2)
             cov2 = np.dot(rho2,Sinv2)
 
-            current[k,alpha] = 2*(np.trace(np.dot(rho0.conj().T, np.dot(np.diag(energy3d[k,:]), np.dot(mask1*S[k,alpha,0],cov1)-np.dot(mask2*S[k,alpha,-1],cov2)) ))).real
+            current[k,alpha] = 2*(np.trace(np.dot(rho0.conj().T, 
+                np.dot(np.diag(energy3d[k,:]), 
+                    np.dot(mask1*S[k,alpha,0],cov1)-np.dot(mask2*S[k,alpha,-1],cov2)) ))).real
     for k in prange(nk):
         current[k,:] = np.dot(lattice_vectors,current[k,:])
     current[:,0] /= nk_periodicity[1]*nk_periodicity[2]
@@ -154,21 +159,23 @@ def evaluate_current_and_neff_using_berry(rho,time,momentum,S,table,energy,N_k,l
             v1 = np.exp(1j*energy[k0,:]*time)
             v2 = np.exp(-1j*energy[k_nn,:]*time)
             mask = np.outer(v1,v2)
+            rho_k_nn = rho[k_nn,:,:]
+            rho_k0_H = rho[k0,:,:].conj().T
+            S_k0 = S[k0,alpha,neighbor_order-1]
             #Differential part:
             derivative_H = (
-                          np.dot(rho[k0,:,:].conj().T,np.dot(mask*S[k0,alpha,neighbor_order-1], np.dot(np.diag(energy[k_nn,:]),rho[k_nn,:,:])))
-                         -np.dot(np.dot(rho[k0,:,:].conj().T,np.diag(energy[k0,:])),np.dot(mask*S[k0,alpha,neighbor_order-1], rho[k_nn,:,:]))
-                            )
+                 np.dot(rho_k0_H,np.dot(mask*S_k0, np.dot(np.diag(energy[k_nn,:]), rho_k_nn)))
+                -np.dot(np.dot(rho_k0_H,np.diag(energy[k0,:])),np.dot(mask*S_k0, rho_k_nn)))
             #Inverse part:
-            overlap_product = (
-                        np.dot(rho[k0,:,:].conj().T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
+            overlap_product = np.dot(rho_k0_H,np.dot(mask*S_k0,rho_k_nn))
 
             derivative_p = np.linalg.det(
-                          np.dot(rho[k0,:,:].conj().T,np.dot(mask*S[k0,alpha,neighbor_order-1], np.dot(momentum[k_nn,:,:,alpha],rho[k_nn,:,:])))
-                         -np.dot(np.dot(rho[k0,:,:].conj().T,momentum[k0,:,:,alpha]),np.dot(mask*S[k0,alpha,neighbor_order-1], rho[k_nn,:,:])))
+                 np.dot(rho_k0_H,np.dot(mask*S_k0, np.dot(momentum[k_nn,:,:,alpha],rho_k_nn)))
+                -np.dot(np.dot(rho_k0_H,momentum[k0,:,:,alpha]),np.dot(mask*S_k0, rho_k_nn)))
 
             if PureState:
-                 term_current[k0,alpha] = ( np.trace( np.dot( np.dot(rho[k0,:,:].conj().T,rho[k0,:,:]), np.dot(np.linalg.inv(overlap_product),derivative_H))) ).real
+                 term_current[k0,alpha] = (np.trace( np.dot( np.dot(rho_k0_H,rho[k0,:,:]),
+                    np.dot(np.linalg.inv(overlap_product),derivative_H))) ).real
             else:
                 VV,SS,UU = np.linalg.svd(overlap_product)
                 normalized_SS = np.ones(SS.shape, dtype=np.complex128)
@@ -176,35 +183,33 @@ def evaluate_current_and_neff_using_berry(rho,time,momentum,S,table,energy,N_k,l
                     if SS[q] > 1e-20:
                         normalized_SS[q] = np.sqrt(1/SS[q])
                 normalized_pseudo_inverse = np.dot(UU.conj().T,np.dot(np.diag(normalized_SS),VV.conj().T))
-                term_current[k0,alpha] = ( np.trace(np.dot(normalized_pseudo_inverse,derivative_H)) ).real
+                term_current[k0,alpha] = (np.trace(np.dot(normalized_pseudo_inverse,derivative_H)) ).real
     return term_current,term_momentum
 
 
 def evaluate_current_using_geometric_phase(rho,time,momentum,overlap,forward_neighbour_table,energy,nk_mesh,lattice_vectors,size,klist3d,nk_vol,volume,nv,neighbor_order=1,order=1):
     # Evaluate distributed covariant current to second order
-    current_mixed_j1,current_mixed_neff1 = evaluate_current_and_neff_using_berry(rho,time,momentum,
-                                                                                 overlap,
-                                                                                 forward_neighbour_table,
-                                                                                 energy.astype(np.complex128),nk_mesh,
-                                                                                 lattice_vectors,
-                                                                                 size,klist3d,
-                                                                                 nk_vol,volume,nv,1)
+    current_mixed_j1,current_mixed_neff1 = \
+        evaluate_current_and_neff_using_berry(rho, time, momentum,
+            overlap, forward_neighbour_table, energy.astype(np.complex128), nk_mesh,
+            lattice_vectors, size, klist3d, nk_vol, volume, nv, 1)
     if order == 1:
         mixed_j5 = (1/(2*np.pi*volume))*np.dot(lattice_vectors,
-                                                                    np.sum(current_mixed_j1,axis=0)/np.array(
-                                                                        [size[1]*size[2],
-                                                                         size[0]*size[2],
-                                                                         size[0]*size[1]]))
+            np.sum(current_mixed_j1,axis=0)/np.array(
+                [size[1]*size[2],
+                 size[0]*size[2],
+                 size[0]*size[1]]))
         return mixed_j5
 
     if order > 1:
-        current_mixed_j2,current_mixed_neff2 = evaluate_current_and_neff_using_berry(rho,time,momentum,
-                                                                                     overlap,
-                                                                                     forward_neighbour_table,
-                                                                                     energy.astype(np.complex128),nk_mesh,
-                                                                                     lattice_vectors,
-                                                                                     size,klist3d,
-                                                                                     nk_vol,volume,nv,2)
+        current_mixed_j2,current_mixed_neff2 = \
+            evaluate_current_and_neff_using_berry(rho,time,momentum,
+                overlap,
+                forward_neighbour_table,
+                energy.astype(np.complex128),nk_mesh,
+                lattice_vectors,
+                size,klist3d,
+                nk_vol,volume,nv,2)
 
         mixed_j5 = (1/(2*np.pi*volume))*np.dot(lattice_vectors,np.sum(
         (4.0/3.0)*current_mixed_j1-(1.0/6.0)*current_mixed_j2,axis=0)/np.array(
@@ -253,10 +258,11 @@ def evaluate_lvn_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,vo
         v1 = np.exp(1j*time*energy3d[k,:])
         v2 = np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
+        E_k = np.diag(energy3d[k,:])
         #norm = np.trace(np.dot(np.conj(rho[k]).T,rho[k])).real/4.0
-        result_jk[0,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,0],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,0])  ),rho[k])).real
-        result_jk[1,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,1],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,1])  ),rho[k])).real
-        result_jk[2,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,2],np.diag(energy3d[k,:]))-np.dot(np.diag(energy3d[k,:]),momentum3d[k,:,:,2])  ),rho[k])).real
+        result_jk[0,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,0],E_k)-np.dot(E_k,momentum3d[k,:,:,0])  ),rho[k])).real
+        result_jk[1,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,1],E_k)-np.dot(E_k,momentum3d[k,:,:,1])  ),rho[k])).real
+        result_jk[2,k] = np.trace(np.dot(mask_int*1j*(np.dot(momentum3d[k,:,:,2],E_k)-np.dot(E_k,momentum3d[k,:,:,2])  ),rho[k])).real
     result_j[index, :] = -normalisation * np.sum(result_jk, axis=1)
 
 #@jit('void(complex128[:,:,:],int64,int64,int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:],float64[:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
@@ -285,7 +291,7 @@ def evaluate_lvn_energy_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,
     energy = np.zeros(N_k)
     for k in prange(N_k):
         for i in range(nb):
-            energy[k] += (rho[k,i,i].real)*energy3d[k,i]
+            energy[k] += energy3d[k,i] * rho[k,i,i].real
     result_e[index] = np.sum(energy) * normalisation
 
 def evaluate_adiabatic_corrections(time,medium,pulses):
@@ -325,9 +331,10 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,N_k):
         p_A_x = np.dot(U,np.dot(momentum[k,:,:,0],Uh))
         p_A_y = np.dot(U,np.dot(momentum[k,:,:,1],Uh))
         p_A_z = np.dot(U,np.dot(momentum[k,:,:,2],Uh))
-        Neff[0,k] = np.trace(np.dot(rho_ad.conj().T, np.dot(p_A_x - momentum[k,:,:,0],rho_ad))).real
-        Neff[1,k] = np.trace(np.dot(rho_ad.conj().T, np.dot(p_A_y - momentum[k,:,:,1],rho_ad))).real
-        Neff[2,k] = np.trace(np.dot(rho_ad.conj().T, np.dot(p_A_z - momentum[k,:,:,2],rho_ad))).real
+        rho_ad_H = rho_ad.conj().T
+        Neff[0,k] = np.trace(np.dot(rho_ad_H, np.dot(p_A_x - momentum[k,:,:,0],rho_ad))).real
+        Neff[1,k] = np.trace(np.dot(rho_ad_H, np.dot(p_A_y - momentum[k,:,:,1],rho_ad))).real
+        Neff[2,k] = np.trace(np.dot(rho_ad_H, np.dot(p_A_z - momentum[k,:,:,2],rho_ad))).real
     return np.sum(Neff, axis=1) / (nk_vol*volume)
 
 
@@ -340,20 +347,22 @@ def evaluate_angles_for_polarisation(rho,time,S,table,energy,N_k,lattice_vectors
     products = np.zeros((len(N_k),3), dtype=np.complex128)
     if n == m:
         for k0 in prange(N_k):
+            rho_k0_H = rho[k0,:,:].conj().T
             for alpha in range(3):
                 k_nn = table[k0,alpha,neighbor_order-1]
                 v1 = np.exp(1j*energy[k0,:]*time)
                 v2 = np.exp(-1j*energy[k_nn,:]*time)
                 mask = np.outer(v1,v2)
-                eigenvalues = np.linalg.eigvals(np.dot(rho[k0,:,:].conj().T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
+                eigenvalues = np.linalg.eigvals(np.dot(rho_k0_H,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
                 products[k0,alpha] = np.prod(eigenvalues**np.abs(eigenvalues))
     else:
         for k0 in prange(N_k):
+            rho_k0_H = rho[k0,:,:].conj().T
             for alpha in range(3):
                 k_nn = table[k0,alpha,neighbor_order-1]
                 v1 = np.exp(1j*energy[k0,:]*time)
                 v2 = np.exp(-1j*energy[k_nn,:]*time)
                 mask = np.outer(v1,v2)
-                product = np.linalg.det(np.dot(rho[k0,:,:].conj().T,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
+                product = np.linalg.det(np.dot(rho_k0_H,np.dot(mask*S[k0,alpha,neighbor_order-1],rho[k_nn,:,:])))
                 products[k0,alpha] = product
     return products

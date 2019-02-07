@@ -1,5 +1,5 @@
 import numpy as np
-from ulmic.ulmi.jit.evaluate_observables import jit_get_correction, evaluate_current_and_neff_using_berry, evaluate_angles_for_polarisation
+from ulmic.ulmi.jit.evaluate_observables import jit_get_correction, evaluate_current_using_berry, evaluate_angles_for_polarisation
 from ulmic.ulmi.jit.evaluate_observables import evaluate_current_jit,evaluate_electrons_jit,evaluate_energy_jit, evaluate_acceleration_jit
 from ulmic.ulmi.jit.evaluate_observables import evaluate_lvn_current_jit, evaluate_lvn_electrons_jit,evaluate_lvn_energy_jit, evaluate_lvn_acceleration_jit
 
@@ -127,7 +127,7 @@ class ObservablesManager:
 
     def get_covariant_current(self):
         time_now = self.solver.time_progression
-        current_mixed_j1, current_mixed_neff1 = evaluate_current_and_neff_using_berry(self.state.state, time_now,
+        current_mixed_j1 = evaluate_current_using_berry(self.state.state, time_now,
                                                 self.medium.momentum,
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,
@@ -139,7 +139,7 @@ class ObservablesManager:
                                                 self.medium.nk_vol,
                                                 self.medium.volume,
                                                 self.medium.nv, 1)
-        current_mixed_j2, current_mixed_neff2 = evaluate_current_and_neff_using_berry(self.state.state, time_now,
+        current_mixed_j2 = evaluate_current_using_berry(self.state.state, time_now,
                                                 self.medium.momentum,
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,

@@ -39,10 +39,12 @@ def evaluate_current_jit(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,re
         v2 = np.exp(-1j*time*energy3d[k,:])
         mask_int = np.outer(v1,v2)
         for i in range(nv):
-            norm = np.dot(np.conj(rho[k,:,i]),rho[k,:,i]).real
-            result_jk[0,k,i] = np.dot(rho[k,:,i].conj(), np.dot(mask_int*momentum3d[k,:,:,0],rho[k,:,i])).real
-            result_jk[1,k,i] = np.dot(rho[k,:,i].conj(), np.dot(mask_int*momentum3d[k,:,:,1],rho[k,:,i])).real
-            result_jk[2,k,i] = np.dot(rho[k,:,i].conj(), np.dot(mask_int*momentum3d[k,:,:,2],rho[k,:,i])).real
+            Z1 = rho[k,:,i]
+            Z2 = Z1.conj()
+            norm = np.dot(rho[k,:,i].conj(),rho[k,:,i]).real
+            result_jk[0,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,0],Z1)).real
+            result_jk[1,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,1],Z1)).real
+            result_jk[2,k,i] = np.dot(Z2, np.dot(mask_int*momentum3d[k,:,:,2],Z1)).real
             result_jk[:,k,i] /= norm
     result_j[index,:] = -normalisation * np.sum(np.sum(result_jk, axis=-1), axis=-1)
 

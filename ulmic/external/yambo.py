@@ -40,7 +40,7 @@ def read_yambo(directory,size=None,out='out.hdf5',save='SAVE'):
     for i in range(nk):
         klist1d[i] = np.dot(lattice,klist[i])
 
-    non_zeros = abs(klist1d) > TOLERANCE_ZERO
+    non_zeros = np.abs(klist1d) > TOLERANCE_ZERO
     if size is None:
         size = np.array([int(np.rint(np.max(1/klist1d[:,q][non_zeros[:,q]])))
                          for q in range(3)])

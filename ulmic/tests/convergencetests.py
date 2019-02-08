@@ -49,8 +49,8 @@ class TestsConvergence():
         pulses.variables[0]['omega'] = 1.6/au.eV
         time = np.linspace(-20.0/au.fs,120.0/au.fs,8000)
         ulmi = UltrafastLightMatterInteraction(medium,pulses,time)
-        flags = ['--constant-time-step']
-        ulmi.set_flags_and_options(flags)
+        options = {'time_step': 'auto'}
+        ulmi.set_flags_and_options(options)
         ulmi.set_parameters(gauge='vg', equation='tdse')
         result = ulmi.run()
         result.save_data_to_file('convergencetests_weak_vg_tdse.hdf5')
@@ -76,10 +76,8 @@ class TestsConvergence():
         time = np.linspace(-20.0/au.fs,120.0/au.fs,8000)
 
         ulmi = UltrafastLightMatterInteraction(medium,pulses,time)#,options={'time_step_min':1e-3,'relative_error_tolerance':1e-7})
-        flags = ['--constant-time-step']
-        #options = {'time_step_min':2e-2}
-        #ulmi.set_flags_and_options(options)
-        ulmi.set_flags_and_options(flags)
+        options = {'time_step': 'auto'}
+        ulmi.set_flags_and_options(options)
         ulmi.set_parameters(gauge='lg', equation='tdse')
 
         result = ulmi.run()

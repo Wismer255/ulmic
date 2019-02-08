@@ -17,6 +17,7 @@ class FinalStateAnalyzer:
             self.psi = result.final_state.copy()
         else:
             self.psi = result.final_state
+        self.rho_diagonal = np.sum(np.real(self.psi * self.psi.conj()), axis=-1) # (nk, nb)
 
 
     def delta_response(self, t0, A0, t_array, \

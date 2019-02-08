@@ -1,7 +1,7 @@
 import os
 from ulmic.environment import UlmicEnvironment as ue
 
-class Logs(object):
+class Logs:
 
     def __init__(self, name, show_header=True):
         self.name = name

@@ -1,6 +1,5 @@
 
 """ Python script for processing Wien2k data. """
-from __future__ import print_function
 import os
 import h5py
 import numpy as np
@@ -268,7 +267,7 @@ class ConvergenceCheckerWien2k:
                                             ]
 
                         plt.figure()
-                        plt.semilogy([np.sqrt(np.dot(q,q)) for q in coeff_indices],abs(coeff_values),'.')
+                        plt.semilogy([np.sqrt(np.dot(q,q)) for q in coeff_indices],np.abs(coeff_values),'.')
                         plt.show()
 
     def check_convergence_radial(self,):

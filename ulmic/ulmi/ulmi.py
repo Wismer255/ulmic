@@ -10,7 +10,7 @@ import numpy as np
 log = Logs('ulmi')
 
 
-class UltrafastLightMatterInteraction(object):
+class UltrafastLightMatterInteraction:
 
     def __init__(self,medium,pulses,time,*args,**kwargs):
 
@@ -66,7 +66,7 @@ class UltrafastLightMatterInteraction(object):
 
         while self.solver_manager.running():
             if self.solver_manager.flags['--print-timestep']:
-                log.log('Counter={0}, Time={1:+.3f} abs_error = {2:+.2e}, rel_error={3:+.2e}'.format(self.solver_manager.counter,
+                log.log('Counter={0}, Time={1:+.3f} abs_error = {2:+.2e}, rel_error={3:+.2e}'.format(self.solver_manager.division_counter,
                                                                                      self.solver_manager.time_progression,
                                                                                      self.state_manager.result_absolute_error.max(),
                                                                                      self.state_manager.result_relative_error.max()))

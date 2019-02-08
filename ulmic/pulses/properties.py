@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class PulseProperties(object):
+class PulseProperties:
 
 
     def eval_field_fast(self,time):

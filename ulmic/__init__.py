@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import ulmic.inputs
 from ulmic.ulmi.ulmi import UltrafastLightMatterInteraction
 from ulmic.medium import Medium

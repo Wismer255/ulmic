@@ -8,7 +8,6 @@ class SimulationBatch():
 
     flags = []
     options = {}
-    #flags.append('--constant-time-step')
     rtol = 5e-2
     ptol = 1e-2
     atol = 1e-13
@@ -51,7 +50,7 @@ class SimulationBatch():
             observable1 = getattr(result1,observable)
             observable2 = getattr(result2,observable)
             np.testing.assert_allclose(observable1,observable2,rtol=self.rtol,atol=max(self.atol,
-                                                                                       np.max(abs(observable1))*self.ptol))
+                    np.max(np.abs(observable1))*self.ptol))
 
     def check_susceptibility(self,):
         ulmi = UltrafastLightMatterInteraction(self.medium, self.pulses, self.time)

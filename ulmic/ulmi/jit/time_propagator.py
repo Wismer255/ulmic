@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 from numpy.linalg import eigh
 from numba import jit, njit, prange
@@ -8,23 +7,23 @@ from scipy.linalg.blas import zhemm
 
 import sys
 
-from ulmic.inputs import flags
-for arg in sys.argv:
-    if arg in flags:
-        flags[arg] = True
+## from ulmic.inputs import flags
+## for arg in sys.argv:
+##     if arg in flags:
+##         flags[arg] = True
 
 relative_error_min = 1e-30
 
 
 #@jit('complex128[:,:](complex128[:,:],complex128[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def lindblad_term(rho,operator):
      operator2 = np.dot(operator,operator)
      result = np.dot(operator,np.dot(rho,operator)) - 0.5*(np.dot(rho,operator2) + np.dot(operator2,rho))
      return result
 
 #==================== Dormand-Prince45, velocity gauge, Stochastic TDSE ================================
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gamma):
     nb,nv = rho.shape
     n_cs = 7
@@ -55,8 +54,8 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
                        +momentum3d[k,:,:,2]*As[i,2])*mask
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
 
-        non_hermitian = np.dot((1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian,
-                              (1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian)
+        Z = np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian
+        non_hermitian = np.dot(Z, Z)
         drho[i] += -0.5*gamma*np.dot(non_hermitian, tmp_rho)
 
 
@@ -86,7 +85,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
             Hamiltonian = (momentum3d[k,:,:,0]*As[0,0]
                            +momentum3d[k,:,:,1]*As[0,1]
                            +momentum3d[k,:,:,2]*As[0,2])*mask
-            rho_out[:,i] = np.dot((1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian,rho[:,i])
+            rho_out[:,i] = np.dot(np.diag(energy3d[k,:]).astype(np.complex128)+Hamiltonian, rho[:,i])
             jump_occured = True
         else:
             rho_out[:,i] = rho[:,i] + out5[:,i]
@@ -97,7 +96,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
 
 #==================== Dormand-Prince45, velocity gauge, TDSE ================================
 #@jit('Tuple((complex128[:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho,As):
 
     n_cs = 7
@@ -142,40 +141,38 @@ def jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho,As):
 
 
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_wavefunctions_dp45(nk,t,dt,energy3d,momentum3d,rho,As):
     rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
-    max_relative_error = 0.0
-    max_absolute_error = 0.0
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
     for k in prange(nk):
-        rho_out5[k,:,:], absolute_error, relative_error = jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As)
-        if absolute_error > max_absolute_error:
-           max_absolute_error = 1.0*absolute_error
-        if relative_error > max_relative_error:
-           max_relative_error = 1.0*relative_error
+        rho_out5[k,:,:], ae, re = \
+            jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As)
+        absolute_error[k] = ae
+        relative_error[k] = re
 
-    return rho_out5, max_absolute_error, max_relative_error
+    return rho_out5, np.max(absolute_error), np.max(relative_error)
 
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_wavefunctions_dp45_stdse(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
     rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
-    max_relative_error = 0.0
-    max_absolute_error = 0.0
-    jump_occured_all = False
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    ## jump_occured_all = False
     for k in prange(nk):
-        rho_out5[k,:,:], absolute_error, relative_error,jump_occured = jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
-        if absolute_error > max_absolute_error:
-           max_absolute_error = 1.0*absolute_error
-        if relative_error > max_relative_error:
-           max_relative_error = 1.0*relative_error
-        if jump_occured:
-            jump_occured_all = True
-    return rho_out5, max_absolute_error, max_relative_error#,jump_occured_all
+        rho_out5[k,:,:], ae, re, jump_occured = \
+            jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
+        absolute_error[k] = ae
+        relative_error[k] = re
+        ## if jump_occured:
+        ##     jump_occured_all = True
+    return rho_out5, np.max(absolute_error), np.max(relative_error) #,jump_occured_all
 
 
 #==================== Dormand-Prince45, velocity gauge, LvN ================================
 #@jit('Tuple((complex128[:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 
     n_cs = 7
@@ -207,7 +204,8 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
         drho[i] += np.conj(drho[i].T)
-        drho[i] += gamma*lindblad_term(tmp_rho,(1.0+0.0*1j)*np.diag(energy3d[k,:])+Hamiltonian)
+        drho[i] += gamma*lindblad_term(tmp_rho,
+            np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian)
 
     out5 = np.zeros((n,m), dtype=np.complex128)
     error = np.zeros((n,m), dtype=np.complex128)
@@ -222,41 +220,36 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 
 
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_lvn_dp45(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
     rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
-    max_relative_error = 0.0
-    max_absolute_error = 0.0
-    for k in range(nk):
-        rho_out5[k,:,:], absolute_error, relative_error = jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
-        #absolute_error = np.max(np.abs(rho_out5[k,:,:]-np.conj(rho_out5[k,:,:].T)))
-
-        if absolute_error > max_absolute_error:
-           max_absolute_error = 1.0*absolute_error
-        if relative_error > max_relative_error:
-           max_relative_error = 1.0*relative_error
-
-    return rho_out5, max_absolute_error, max_relative_error
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    for k in prange(nk):
+        rho_out5[k,:,:], ae, re = \
+            jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho[k],As,gamma)
+        # ae = np.max(np.abs(rho_out5[k,:,:]-np.conj(rho_out5[k,:,:].T)))
+        absolute_error[k] = ae
+        relative_error[k] = re
+    return rho_out5, np.max(absolute_error), np.max(relative_error)
 
 
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def step_vg_lvn(nk,t,energy3d,momentum3d,rho,As):
     drho = np.zeros(rho.shape, dtype=np.complex128)
-    for k in range(nk):
+    for k in prange(nk):
         v1 = np.exp(1j*(t)*energy3d[k,:])
         mask = np.outer(v1,np.conj(v1))
         drho[k] = -1j*np.dot((momentum3d[k,:,:,0]*As[0]
                              +momentum3d[k,:,:,1]*As[1]
                              +momentum3d[k,:,:,2]*As[2])*mask,rho[k])
         drho[k] += np.conj(drho[k].T)
-
-
     return drho
 
 
 #==================== Dormand-Prince45, velocity gauge, LvN ================================
 #@jit('Tuple((complex128[:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,gamma, average_energy_difference):
 
     n_cs = 7
@@ -312,25 +305,22 @@ def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,ga
 
 
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_lvn_dp45_FAKE_DECOHERENCE(nk,t,dt,energy3d,momentum3d,rho,As,gamma, average_energy_difference):
     rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
-    max_relative_error = 0.0
-    max_absolute_error = 0.0
-    for k in range(nk):
-        rho_out5[k,:,:], absolute_error, relative_error = jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho[k],As,gamma, average_energy_difference)
-
-        if absolute_error > max_absolute_error:
-           max_absolute_error = 1.0*absolute_error
-        if relative_error > max_relative_error:
-           max_relative_error = 1.0*relative_error
-
-    return rho_out5, max_absolute_error, max_relative_error
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    for k in prange(nk):
+        rho_out5[k,:,:], ae, re = \
+            jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho[k],As,gamma, average_energy_difference)
+        absolute_error[k] = ae
+        relative_error[k] = re
+    return rho_out5, np.max(absolute_error), np.max(relative_error)
 
 
 #==================== RK4, velocity gauge, TDSE ================================
 #@jit('complex128[:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
     v1 = np.exp(1j*t*energy3d[k,:])
     v2 = np.exp(-1j*t*energy3d[k,:])
@@ -352,25 +342,25 @@ def jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
 
 
 #@jit('complex128[:,:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_wavefunctions(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
     rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    for k in range(nk):
+    for k in prange(nk):
         rho_out[k,:,:] = jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4)
     return rho_out
 
 
-#@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
-def jit_step_vg_wavefunctions_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    for k in k_chunk:
-        rho_out[k,:,:] = jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4)
-    return rho_out
+## #@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+## @njit
+## def jit_step_vg_wavefunctions_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
+##     rho_out = np.zeros(rho.shape, dtype=np.complex128)
+##     for k in k_chunk:
+##         rho_out[k,:,:] = jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4)
+##     return rho_out
 
 #==================== RK4, velocity gauge, Liouville-von Neumann ===============
 #@jit('complex128[:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit
 def jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
     v1 = np.exp(1j*t*energy3d[k,:])
     v2 = np.exp(-1j*t*energy3d[k,:])
@@ -400,25 +390,25 @@ def jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
 
 
 #@jit('complex128[:,:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_vg_lvn(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
     rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    for k in range(nk):
+    for k in prange(nk):
         rho_out[k,:,:] = jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma)
     return rho_out
 
 
-#@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
-def jit_step_vg_lvn_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    for k in k_chunk:
-        rho_out[k,:,:] = jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma)
-    return rho_out
+## #@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+## @njit
+## def jit_step_vg_lvn_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
+##     rho_out = np.zeros(rho.shape, dtype=np.complex128)
+##     for k in k_chunk:
+##         rho_out[k,:,:] = jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma)
+##     return rho_out
 
 
 #==================== Length gauge, TDSE ================================
-@njit(cache=not flags['--no-cache'])
+@njit
 def step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
     rho_out = np.zeros(rho[k,:,:].shape, dtype=np.complex128)
     rho0 = np.copy(rho[k,:,:])
@@ -453,16 +443,16 @@ def step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions)
     return rho_out
 
 
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def nonperturbative_jit_solver_lvn(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
     rho_out = np.zeros(rho.shape, dtype=np.complex128)
     rho_norm = np.zeros(rho.shape, dtype=np.complex128)
 
-    for k in range(nk):
+    for k in prange(nk):
         Uk,Sk,Vhk = np.linalg.svd(rho[k,:,:])
         rho_norm[k] = np.dot(Uk,np.dot(np.diag(np.sqrt(Sk.astype(np.complex128))),Vhk))
 
-    for k in range(nk):
+    for k in prange(nk):
         rho0 = rho_norm[k]
         v1 = np.exp(1j*energy3d[k,:]*time)
         for alpha in directions:
@@ -490,10 +480,10 @@ def nonperturbative_jit_solver_lvn(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_
 
 
 #@jit('complex128[:,:,:](int64,int64[:],int64,complex128[:,:,:],complex128[:,:,:,:,:], int64[:,:,:], float64[:,:], float64[:],float64)',nopython=True,cache=True)#,parallel=True)#,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def nonperturbative_jit_solver(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
     rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    for k in range(nk):
+    for k in prange(nk):
         tmp = step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions)
         rho_out[k,:,:] = tmp
     return rho_out
@@ -501,7 +491,7 @@ def nonperturbative_jit_solver(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_crys
 
 #=================== Dormand-Prince45, length gauge, TDSE ================================
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:,:],int64[:,:,:],int64[:],complex128[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_lg_wavefunctions_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_cartesian,directions,lattice_vectors):
     n_cs = 7
     Es = np.zeros(Es_cartesian.shape, dtype=np.float64)
@@ -537,23 +527,18 @@ def jit_step_lg_wavefunctions_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
 
-    absolute_error = 0.0
-    relative_error = 0.0
-    for i in range(nk):
-        abs_error = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
-        denominator = max(relative_error_min,np.sqrt(np.trace(np.dot(np.conj(out5[i]).T,out5[i])).real))
-        rel_error = abs_error/denominator
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    for i in prange(nk):
+        absolute_error[i] = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
+        denominator = max(relative_error_min, np.sqrt(np.trace(np.dot(np.conj(out5[i]).T,out5[i])).real))
+        relative_error[i] = absolute_error[i] / denominator
 
-        if abs_error > absolute_error:
-            absolute_error = abs_error
-        if rel_error > relative_error:
-            relative_error = rel_error
-
-    return rho+out5, absolute_error, relative_error
+    return rho+out5, np.max(absolute_error), np.max(relative_error)
 
 
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:,:],int64[:,:,:],int64[:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_cartesian,gamma,directions,lattice_vectors):
     n_cs = 7
     Es = np.zeros(Es_cartesian.shape, dtype=np.float64)
@@ -575,9 +560,9 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
     sol5 = np.array([5179.0/57600.0, 0.0, 7571.0/16695.0, 393.0/640.0, -92097.0/339200.0, 187.0/2100.0, 1.0/40.0])
 
     decoherence_exponents = np.zeros((nk,n,n), dtype=np.complex128)
-    for i in range(n):
-        for j in range(n):
-            for k in range(nk):
+    for k in prange(nk):
+        for i in range(n):
+            for j in range(n):
                 decoherence_exponents[k,i,j] = 0.5*gamma*(energy3d[k,i]-energy3d[k,j])**2
 
     for i in range(n_cs):
@@ -587,7 +572,7 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
 
         tmp_rho = tmp_rho*np.exp(-cs[i]*dt*decoherence_exponents)
         drho[i] = -1j*nonperturbative_jit_solver_lvn(nk,size,nv,tmp_rho,overlap,neighbour_table,energy3d,Es[i],t+cs[i]*dt,directions)
-        for k in range(nk):
+        for k in prange(nk):
             drho[i,k,:,:] += np.conj(drho[i,k,:,:].T)
         drho[i] = drho[i]*np.exp(cs[i]*dt*decoherence_exponents)
 
@@ -597,23 +582,19 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
 
-    absolute_error = 0.0
-    relative_error = 0.0
-    for i in range(nk):
-        abs_error = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
-        denominator = max(relative_error_min,np.sqrt(np.trace(np.dot(np.conj(out5[i]).T,out5[i])).real))
-        rel_error = abs_error/denominator
-        if abs_error > absolute_error:
-            absolute_error = abs_error
-        if rel_error > relative_error:
-            relative_error = rel_error
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    for i in prange(nk):
+        absolute_error[i] = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
+        denominator = max(relative_error_min, np.sqrt(np.trace(np.dot(np.conj(out5[i]).T,out5[i])).real))
+        relative_error[i] = absolute_error[i] / denominator
 
     output = np.exp(-dt*decoherence_exponents)*(rho+out5)
-    return output, absolute_error, relative_error
+    return output, np.max(absolute_error), np.max(relative_error)
 
 
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:,:],int64[:,:,:],int64[:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-@njit(cache=not flags['--no-cache'])
+@njit(parallel=True)
 def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_cartesian,gamma,
                                             directions,lattice_vectors,average_energy_difference):
     n_cs = 7
@@ -639,7 +620,7 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
     for i in range(n):
         for j in range(n):
             if i != j:
-                for k in range(nk):
+                for k in prange(nk):
                     decoherence_exponents[k,i,j]  = 0.5*gamma*(average_energy_difference)**2
 
     for i in range(n_cs):
@@ -649,7 +630,7 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
 
         tmp_rho = tmp_rho*np.exp(-cs[i]*dt*decoherence_exponents)
         drho[i] = -1j*nonperturbative_jit_solver_lvn(nk,size,nv,tmp_rho,overlap,neighbour_table,energy3d,Es[i],t+cs[i]*dt,directions)
-        for k in range(nk):
+        for k in prange(nk):
             drho[i,k,:,:] += np.conj(drho[i,k,:,:].T)
         drho[i] = drho[i]*np.exp(cs[i]*dt*decoherence_exponents)
 
@@ -659,16 +640,12 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
 
-    absolute_error = 0.0
-    relative_error = 0.0
-    for i in range(nk):
-        abs_error = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
+    absolute_error = np.zeros(nk)
+    relative_error = np.zeros(nk)
+    for i in prange(nk):
+        absolute_error[i] = np.sqrt(np.trace(np.dot(np.conj(error[i]).T,error[i])).real)
         denominator = max(relative_error_min,np.sqrt(np.trace(np.dot(np.conj(out5[i]).T,out5[i])).real))
-        rel_error = abs_error/denominator
-        if abs_error > absolute_error:
-            absolute_error = abs_error
-        if rel_error > relative_error:
-            relative_error = rel_error
+        relative_error[i] = absolute_error / denominator
 
     output = np.exp(-dt*decoherence_exponents)*(rho+out5)
-    return output, absolute_error, relative_error
+    return output, np.max(absolute_error), np.max(relative_error)

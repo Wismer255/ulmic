@@ -13,7 +13,7 @@ VA_au = 1/51.4220652
 nm_Eph = 2*pi*137.035999/(1/0.052917721)
 
 
-class AnalyticalPulse(object):
+class AnalyticalPulse:
 
     def __init__(self, pulse_type):
         """Specify pulse parameters.
@@ -173,7 +173,7 @@ class AnalyticalPulse(object):
         cep = pulse['cep']
 
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
-        H=np.heaviside(tau_l-abs(time-delay),0.5)
+        H=np.heaviside(tau_l-np.abs(time-delay),0.5)
         pulse_cos4= -(E0/omega )*((np.cos(np.pi*(time-delay)/(2*tau_l)))**4)*np.sin(omega*(time-delay)+cep)
 
         return  H*pulse_cos4*polarisation_vector
@@ -187,7 +187,7 @@ class AnalyticalPulse(object):
         delay = pulse['delay']
         cep = pulse['cep']
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
-        H=np.heaviside(tau_l-abs(time-delay),0.5)
+        H=np.heaviside(tau_l-np.abs(time-delay),0.5)
         field_cos4=(2*np.pi*E0/(omega*tau_l))*(np.sin((np.pi*(time-delay))/(2*tau_l)))*((np.cos((np.pi*(time-delay))/(2*tau_l)))**3)*(np.sin(omega*(time-delay)+cep))\
                                           -E0*((np.cos((np.pi*(time-delay))/(2*tau_l)))**4)*(np.cos(omega*(time-delay)+cep))
 

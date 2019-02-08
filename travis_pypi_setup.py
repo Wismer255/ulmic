@@ -3,8 +3,6 @@
 """Update encrypted deploy password in Travis config file
 """
 
-
-from __future__ import print_function
 import base64
 import json
 import os
@@ -62,7 +60,7 @@ def fetch_public_key(repo):
     if 'key' not in data:
         errmsg = "Could not find public key for repo: {}.\n".format(repo)
         errmsg += "Have you already added your GitHub repo to Travis?"
-        raise ValueError(errmsg)
+        raise RuntimeError(errmsg)
     return data['key']
 
 

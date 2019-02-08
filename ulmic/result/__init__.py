@@ -60,8 +60,7 @@ class Result:
             dt = self.time_output[1]-self.time_output[0]
             return 2*np.pi*np.fft.fftfreq(nt-nt_crop,dt)
         else:
-            print('std = {:e}'.format(std))
-            raise(ValueError)
+            raise RuntimeError('std = {:e}'.format(std))
 
     def interpolate_values_to_uniform_grid(self,t_min=None):
         time_old = np.copy(self.time_output)

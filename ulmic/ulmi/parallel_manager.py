@@ -2,7 +2,7 @@ from ulmic.environment import UlmicEnvironment
 from mpi4py import MPI
 import numpy as np
 
-class ParallelManager(object):
+class ParallelManager:
 
     def __init__(self,medium):
         self.medium = medium
@@ -22,5 +22,6 @@ class ParallelManager(object):
 
 
     def get_eval_k_mesh(self):
-        nk_eval_range = np.arange(self.medium.nk_eval)
-        return nk_eval_range
+        return self.medium.nk_eval
+        # nk_eval_range = np.arange(self.medium.nk_eval)
+        # return nk_eval_range

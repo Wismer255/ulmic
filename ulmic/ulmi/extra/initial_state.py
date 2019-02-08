@@ -1,6 +1,6 @@
 import numpy as np
 
-class InitialState(object):
+class InitialState:
 
     def get_initial_state_by_name(self):
 
@@ -97,10 +97,10 @@ class InitialState(object):
                     kk -= 1.0
                 self.state[k0, nv - 1, nv - 1] = 0.3 * np.exp(-4 * np.sin(np.pi * kk) ** 2)
                 self.state[k0, nv, nv] = 0.1 * np.exp(-6 * np.sin(
-                    np.pi * kk) ** 2)  # + 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*abs(self.medium.momentum[k0,0,1,0])
+                    np.pi * kk) ** 2)  # + 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*np.abs(self.medium.momentum[k0,0,1,0])
                 # self.state[k0,nv-1,nv-1] = 0.0
-                # self.state[k0,nv-1,nv-1] += 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*abs(self.medium.momentum[k0,0,1,0])
-                # self.state[k0,nv,nv]     += 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*abs(self.medium.momentum[k0,0,1,0])
+                # self.state[k0,nv-1,nv-1] += 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*np.abs(self.medium.momentum[k0,0,1,0])
+                # self.state[k0,nv,nv]     += 0.2*np.exp(-4*np.sin(np.pi*kk)**2)*np.abs(self.medium.momentum[k0,0,1,0])
                 # self.state[k0,nv-1,nv] =    0.2*np.exp(-4*np.sin(np.pi*kk)**2)*self.medium.momentum[k0,0,1,0]
                 # self.state[k0,nv,nv-1] =    0.2*np.exp(-4*np.sin(np.pi*kk)**2)*self.medium.momentum[k0,1,0,0]
 

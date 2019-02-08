@@ -85,15 +85,15 @@ if __name__ == "__main__":
         try:
             input_format = sys.argv[sys.argv.index('convert')+1]
         except:
-            raise('No input format specified!')
+            raise ValueError('No input format specified!')
         try:
             input_file = sys.argv[sys.argv.index('convert')+2]
         except:
-            raise('No input file specified!')
+            raise ValueError('No input file specified!')
         try:
             output_directory = sys.argv[sys.argv.index('convert')+3]
         except:
-            raise('No output directory specified!')
+            raise ValueError('No output directory specified!')
         try:
             optional_arguments = sys.argv[sys.argv.index('convert')+4:]
             options = {}
@@ -109,11 +109,11 @@ if __name__ == "__main__":
         try:
             input_data = sys.argv[sys.argv.index('analyse')+1]
         except:
-            raise('No input data specified!')
+            raise ValueError('No input data specified!')
         try:
             output_directory = sys.argv[sys.argv.index('analyse')+2]
         except:
-            raise('No output directory specified!')
+            raise ValueError('No output directory specified!')
         try:
             optional_arguments = sys.argv[sys.argv.index('analyse')+3:]
             options = {}
@@ -320,10 +320,10 @@ if __name__ == "__main__":
         #medium.set_max_band_index(200)
         print(medium.nb)
 
-        plt.matshow(abs(medium.momentum[medium.k_gamma,:,:,0]))
+        plt.matshow(np.abs(medium.momentum[medium.k_gamma,:,:,0]))
         plt.colorbar()
 
-        plt.matshow(np.log(abs(medium.momentum[medium.k_gamma,:,:,0])))
+        plt.matshow(np.log(np.abs(medium.momentum[medium.k_gamma,:,:,0])))
         plt.colorbar()
     #    plt.matshow(np.real(medium.momentum[0,:,:,0]))
     #    plt.matshow(np.imag(medium.momentum[0,:,:,0]))
@@ -333,8 +333,8 @@ if __name__ == "__main__":
 
         for i in range(medium.nb):
             for j in range(i+1,medium.nb):
-                if abs(medium.energy[0,i]-medium.energy[0,j]) < 1e-5:
-                    print(abs(medium.energy[0,i]-medium.energy[0,j]),abs(medium.momentum[0,i,j,0]))
+                if np.abs(medium.energy[0,i]-medium.energy[0,j]) < 1e-5:
+                    print(np.abs(medium.energy[0,i]-medium.energy[0,j]),np.abs(medium.momentum[0,i,j,0]))
 
 
         # from ulmic.medium.sum_rules import MediumConvergence
@@ -524,10 +524,10 @@ if __name__ == "__main__":
         # plt.plot(ulmi_lvn1.result_t,ulmi_lvn1.result_j2[:,0])
         # plt.plot(ulmi_lvn2.result_t,ulmi_lvn2.result_j2[:,0])
         # plt.figure()
-        # plt.semilogy(abs(np.fft.fft(ulmi_tdse.result_j2[:,0])))
-        # plt.semilogy(abs(np.fft.fft(ulmi_lvn.result_j2[:,0])))
-        # plt.semilogy(abs(np.fft.fft(ulmi_lvn1.result_j2[:,0])))
-        # plt.semilogy(abs(np.fft.fft(ulmi_lvn2.result_j2[:,0])))
+        # plt.semilogy(np.abs(np.fft.fft(ulmi_tdse.result_j2[:,0])))
+        # plt.semilogy(np.abs(np.fft.fft(ulmi_lvn.result_j2[:,0])))
+        # plt.semilogy(np.abs(np.fft.fft(ulmi_lvn1.result_j2[:,0])))
+        # plt.semilogy(np.abs(np.fft.fft(ulmi_lvn2.result_j2[:,0])))
         # plt.show()
 
         # Second test
@@ -545,7 +545,7 @@ if __name__ == "__main__":
             # plt.plot(ulmi_lvn2.result_t,ulmi_lvn2.result_j2[:,0])
             # plt.plot(ulmi_lvn3.result_t,ulmi_lvn3.result_j2[:,0])
             freq = 2*np.pi*au.eV*np.fft.fftfreq(len(ulmi_lvn1.result_t),np.max(np.diff(ulmi_lvn1.result_t)))
-            ax2.semilogy(freq,abs(np.fft.fft(ulmi_lvn1.result_j2[:,0]))**2 / fields[i] )
-            # plt.semilogy(abs(np.fft.fft(ulmi_lvn2.result_j2[:,0])))
-            # plt.semilogy(abs(np.fft.fft(ulmi_lvn3.result_j2[:,0])))
+            ax2.semilogy(freq,np.abs(np.fft.fft(ulmi_lvn1.result_j2[:,0]))**2 / fields[i] )
+            # plt.semilogy(np.abs(np.fft.fft(ulmi_lvn2.result_j2[:,0])))
+            # plt.semilogy(np.abs(np.fft.fft(ulmi_lvn3.result_j2[:,0])))
         plt.show()

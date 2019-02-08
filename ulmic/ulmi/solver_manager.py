@@ -6,14 +6,16 @@ from ulmic.inputs import options as default_options
 
 class SolverManager:
 
-    def __init__(self,time_in,pulses):
+    def __init__(self, time_in, pulses):
 
         self.time_in = time_in
         self.time_out = time_in
-        self.counter = 0
+        self.division_counter = 0
+        self.accepted_step_counter = 0 # counts how many steps have been taken without
+                                       # changing the time step
         self.total_number_of_steps = 0
         self.nt_out = len(self.time_out)
-        self.default_dt = np.mean(np.diff(time_in))
+        self.default_dt = None # it will be initialized later
 
         self.flags = dict(default_flags)
         self.options = dict(default_options)
@@ -22,12 +24,22 @@ class SolverManager:
     def set_managers(self, parallel_manager=None):
         self.parallel = parallel_manager
 
-    def init(self):
-        self.nk_range_eval = self.parallel.get_eval_k_mesh()
+    def init(self): # this function is supposed to be called after setting
+                    # all the flags and options
+        self.nk_mesh = self.parallel.get_eval_k_mesh()
         self.time_progression = self.time_out[0]
         self.index_progression = 0
         self.set_field_directions()
         self.total_number_of_steps = 0
+        if str(self.options['time_step']).lower() == 'auto':
+            self.default_dt = np.mean(np.diff(self.time_in)) # it may change later
+            self.options['time_step_min'] = min(self.default_dt, self.options['time_step_min'])
+        elif type(self.options['time_step']) == float:
+            self.default_dt = self.options['time_step']
+            self.division_counter = 0
+            assert(self.default_dt > 0.0)
+        else:
+            raise ValueError("time_step must be either 'auto' or a floating-point number")
 
     def set_flags(self,*args):
         """ Pass flags (strings) or a list of flags (list of strings)"""
@@ -37,14 +49,14 @@ class SolverManager:
             elif isinstance(arg,list) or isinstance(arg,tuple):
                 self.set_flags(*tuple(arg))
             else:
-                raise (ValueError('Flag {} not recognized '.format(arg)))
+                raise ValueError('Flag {} not recognized '.format(arg))
         return
 
     def _set_flag(self,arg):
         if arg in self.flags:
             self.flags[arg] = True
         else:
-            raise (ValueError('Flag {} not recognized'.format(arg)) )
+            raise ValueError('Flag {} not recognized'.format(arg))
 
     def set_options(self,*args,**kwargs):
         """ Pass a dictionary with options or pass options as keywords """
@@ -52,13 +64,13 @@ class SolverManager:
             if isinstance(arg,dict):
                 self.set_options(**arg)
             else:
-                raise(ValueError,'Argument type not recognized')
+                raise ValueError('Argument type not recognized')
 
         for kwarg in kwargs:
             if kwarg in self.options:
                 self.options[kwarg] = kwargs[kwarg]
             else:
-                raise(ValueError, 'unknown option: {}'.format(kwarg))
+                raise ValueError('unknown option: {}'.format(kwarg))
 
     def load_default_parameters(self,flags,options):
 
@@ -85,7 +97,7 @@ class SolverManager:
                     print('ulmi: Unrecognized option')
         self.options = default_options
 
-        self.time_step_min = self.options['time_step_min']
+        self.default_dt = max(self.default_dt, self.options['time_step_min'])
         self.relative_error_tolerance = self.options['relative_error_tolerance']
         self.timestamp = int(time_module.time())
         self.tolerance_zero_field = self.options['tolerance_zero_field']

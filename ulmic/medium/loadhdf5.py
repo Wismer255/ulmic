@@ -11,7 +11,7 @@ except:
     MPI4PY_INSTALLED = False
 
 
-class LoadHdf5(object):
+class LoadHdf5:
 
     def __init__(self, input_file,
                  k_points=None, buffer_width=(0,0,0),
@@ -61,7 +61,7 @@ class LoadHdf5(object):
         elif os.path.isfile(os.path.join(ue.get_data_dir(),input_file)):
             hdf5_data = h5py.File(os.path.join(ue.get_data_dir(),input_file), 'r')
         else:
-            raise(ValueError('File {} not found'.format(input_file)))
+            raise RuntimeError('File {} not found'.format(input_file))
         self.klist1d = hdf5_data['klist1d'][()]
         self.klist3d = hdf5_data['klist3d'][()]
         self.lattice_vectors = hdf5_data['lattice_vectors'][()]
@@ -71,7 +71,7 @@ class LoadHdf5(object):
         self.nv = hdf5_data['valence_bands'][()]
         if read_overlap:
             self.neighbour_table = hdf5_data['neighbour_table'][()]
-        self.volume = abs(np.dot(self.lattice_vectors[:,0],
+        self.volume = np.abs(np.dot(self.lattice_vectors[:,0],
                                  np.cross(self.lattice_vectors[:,1],self.lattice_vectors[:,2])))
         self.check_input_data()
         self.nk1d = len(self.klist1d)
@@ -168,7 +168,7 @@ class LoadHdf5(object):
             elif k_buffer_tuple[i] < 0:
                 buffer_directional = np.concatenate((
                                             np.arange(k_buffer_tuple[i],0),
-                                            np.arange(1,abs(k_buffer_tuple[i])+1)))
+                                            np.arange(1,np.abs(k_buffer_tuple[i])+1)))
             else:
                 buffer_directional = []
             buffer_lists.append(buffer_directional)

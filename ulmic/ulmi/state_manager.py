@@ -190,8 +190,8 @@ class StateManager(InitialState):
         ''' Evaluate Courant number to determine maximum allowed time step '''
         omega_typical = 1.0 / au.eV
         reciprocal_dt_Courant = np.max(
-            abs(self.medium.size * np.dot(self.medium.lattice_vectors, self.pulses.eval_field_fast(self.time_now))))
-        reciprocal_dt_Courant_int = np.max(abs(self.medium.size * np.dot(self.medium.lattice_vectors,
+            np.abs(self.medium.size * np.dot(self.medium.lattice_vectors, self.pulses.eval_field_fast(self.time_now))))
+        reciprocal_dt_Courant_int = np.max(np.abs(self.medium.size * np.dot(self.medium.lattice_vectors,
                                                                          omega_typical * self.pulses.eval_potential_fast(
                                                                              self.time_now))))
         reciprocal_dt_Courant = max(reciprocal_dt_Courant, reciprocal_dt_Courant_int)

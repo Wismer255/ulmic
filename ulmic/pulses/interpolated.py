@@ -53,13 +53,13 @@ class InterpolatedPulse:
 
         # Normalize with respect to electric field envelope
         electric_field = -self.spl_deriv(t_new)
-        envelope = abs(hilbert(electric_field))
+        envelope = np.abs(hilbert(electric_field))
         norm = np.max((envelope))
 
         self.spl = UnivariateSpline(t_new,(self.E_max/norm)*A_new,s=0,ext='zeros')
         self.spl_deriv = UnivariateSpline(t_new,(self.E_max/norm)*A_new,s=0,ext='zeros').derivative(n=1)
 
-        if abs(A_new[0]) > 1e-10 or abs(A_new[-1]) > 1e-10:
+        if np.abs(A_new[0]) > 1e-10 or np.abs(A_new[-1]) > 1e-10:
             print('Warning: A[0]={:e} and A[-1]={:e}'.format(A_new[0], A_new[-1]))
 
     def eval_potential_fast(self,t):

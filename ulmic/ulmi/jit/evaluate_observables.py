@@ -83,7 +83,7 @@ def evaluate_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,v
     for k in prange(N_k):
         for j in range(nv):
             for i in range(nb):
-                electron_number[k,i,j] = abs(rho[k,i,j])**2
+                electron_number[k,i,j] = np.abs(rho[k,i,j])**2
         electron_number[k,:,:] *= normalisation
     result_q[index] = np.sum(electron_number)
     result_n[index] = np.sum(electron_number[:, nv:, :])
@@ -100,7 +100,7 @@ def evaluate_energy_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volu
     for k in range(N_k):
         for j in range(nv):
             for i in range(nb):
-                absorbed_energy[k] += energy3d[k,i] * abs(rho[k,i,j])**2
+                absorbed_energy[k] += energy3d[k,i] * np.abs(rho[k,i,j])**2
     result_e[index] = np.sum(absorbed_energy) * normalisation
 
 

@@ -46,9 +46,9 @@ class MediumProperties(MediumManipulator):
         for k in krange:
             for b1 in range(self.nv):
                 for b2 in range(self.nv,self.nb):
-                    Neffx += 2*(abs(self.momentum[k,b1,b2,0])**2)/((self.energy[k,b2]-self.energy[k,b1]))
-                    Neffy += 2*(abs(self.momentum[k,b1,b2,1])**2)/((self.energy[k,b2]-self.energy[k,b1]))
-                    Neffz += 2*(abs(self.momentum[k,b1,b2,2])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffx += 2*(np.abs(self.momentum[k,b1,b2,0])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffy += 2*(np.abs(self.momentum[k,b1,b2,1])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffz += 2*(np.abs(self.momentum[k,b1,b2,2])**2)/((self.energy[k,b2]-self.energy[k,b1]))
         return np.array([Neffx,Neffy,Neffz])/self.nk
 
     def calculate_berry_curvature_for_band(self,band_index):
@@ -56,10 +56,10 @@ class MediumProperties(MediumManipulator):
         #for i in range(self.nk):
         for k in range(self.nb):
             if k != band_index:
-                #if abs(self.medium.energy[i,k]-self.medium.energy[i,band_index]) > TOLERANCE_DEGENERACY:
+                #if np.abs(self.medium.energy[i,k]-self.medium.energy[i,band_index]) > TOLERANCE_DEGENERACY:
                 for alpha in range(3):
                     for beta in range(3):
-                        mask = abs(self.energy[:,k]-self.energy[:,band_index]) > TOLERANCE_DEGENERACY
+                        mask = np.abs(self.energy[:,k]-self.energy[:,band_index]) > TOLERANCE_DEGENERACY
                         berry_curvature[:,alpha,beta] += mask*(self.momentum[:,k,band_index,alpha]*
                                                           self.momentum[:,band_index,k,beta])/(
                                                            ((self.energy[:,k]-
@@ -133,7 +133,7 @@ class MediumProperties(MediumManipulator):
         FD_inverse_mass = self.finite_difference_inverse_mass()
         for n in range(self.nb):
             denominator = self.energy[:, n].reshape((self.nk, 1)) - self.energy
-            denominator_is_small = (abs(denominator) <= gap_threshold)
+            denominator_is_small = (np.abs(denominator) <= gap_threshold)
             denominator[denominator_is_small] = 1e+10
             for n1 in range(self.nb):
                 if n == n1:

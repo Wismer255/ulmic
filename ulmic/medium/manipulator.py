@@ -47,7 +47,7 @@ class MediumManipulator(LoadHdf5):
         max_deviation = 0.0
         for i in range(self.nk_local):
             for j in range(3):
-                deviation = np.max(abs(self.momentum[i,:,:,j]-self.momentum[i,:,:,j].conj().T))
+                deviation = np.max(np.abs(self.momentum[i,:,:,j]-self.momentum[i,:,:,j].conj().T))
                 if deviation > max_deviation:
                     max_deviation = deviation
         logging.info('Hermiticity (max. deviation): {:e}'.format(max_deviation))
@@ -193,9 +193,9 @@ class MediumManipulator(LoadHdf5):
         for k in krange:
             for b1 in range(self.nv):
                 for b2 in range(self.nv,self.nb):
-                    Neffx += 2*(abs(self.momentum[k,b1,b2,0])**2)/((self.energy[k,b2]-self.energy[k,b1]))
-                    Neffy += 2*(abs(self.momentum[k,b1,b2,1])**2)/((self.energy[k,b2]-self.energy[k,b1]))
-                    Neffz += 2*(abs(self.momentum[k,b1,b2,2])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffx += 2*(np.abs(self.momentum[k,b1,b2,0])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffy += 2*(np.abs(self.momentum[k,b1,b2,1])**2)/((self.energy[k,b2]-self.energy[k,b1]))
+                    Neffz += 2*(np.abs(self.momentum[k,b1,b2,2])**2)/((self.energy[k,b2]-self.energy[k,b1]))
         return np.array([Neffx,Neffy,Neffz])/self.nk
 
     def calculate_berry_curvature_for_band(self,band_index):
@@ -203,10 +203,10 @@ class MediumManipulator(LoadHdf5):
         #for i in range(self.nk):
         for k in range(self.nb):
             if k != band_index:
-                #if abs(self.medium.energy[i,k]-self.medium.energy[i,band_index]) > TOLERANCE_DEGENERACY:
+                #if np.abs(self.medium.energy[i,k]-self.medium.energy[i,band_index]) > TOLERANCE_DEGENERACY:
                 for alpha in range(3):
                     for beta in range(3):
-                        mask = abs(self.energy[:,k]-self.energy[:,band_index]) > TOLERANCE_DEGENERACY
+                        mask = np.abs(self.energy[:,k]-self.energy[:,band_index]) > TOLERANCE_DEGENERACY
                         berry_curvature[:,alpha,beta] += mask*(self.momentum[:,k,band_index,alpha]*
                                                           self.momentum[:,band_index,k,beta])/(
                                                            ((self.energy[:,k]-

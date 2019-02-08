@@ -71,7 +71,7 @@ class LoadHdf5:
         self.nv = hdf5_data['valence_bands'][()]
         if read_overlap:
             self.neighbour_table = hdf5_data['neighbour_table'][()]
-        self.volume = abs(np.dot(self.lattice_vectors[:,0],
+        self.volume = np.abs(np.dot(self.lattice_vectors[:,0],
                                  np.cross(self.lattice_vectors[:,1],self.lattice_vectors[:,2])))
         self.check_input_data()
         self.nk1d = len(self.klist1d)
@@ -168,7 +168,7 @@ class LoadHdf5:
             elif k_buffer_tuple[i] < 0:
                 buffer_directional = np.concatenate((
                                             np.arange(k_buffer_tuple[i],0),
-                                            np.arange(1,abs(k_buffer_tuple[i])+1)))
+                                            np.arange(1,np.abs(k_buffer_tuple[i])+1)))
             else:
                 buffer_directional = []
             buffer_lists.append(buffer_directional)

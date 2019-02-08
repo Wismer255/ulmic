@@ -267,7 +267,7 @@ class ConvergenceCheckerWien2k:
                                             ]
 
                         plt.figure()
-                        plt.semilogy([np.sqrt(np.dot(q,q)) for q in coeff_indices],abs(coeff_values),'.')
+                        plt.semilogy([np.sqrt(np.dot(q,q)) for q in coeff_indices],np.abs(coeff_values),'.')
                         plt.show()
 
     def check_convergence_radial(self,):

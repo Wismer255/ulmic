@@ -94,7 +94,7 @@ class LocalPotential1D:
             potential_coarse = np.copy(potential_fine)
             self.neighbors_for_convergence += 1
             potential_fine = self.create_potential(check_for_convergence=False)
-            deviation = sum(abs(potential_fine-potential_coarse))
+            deviation = sum(np.abs(potential_fine-potential_coarse))
             if self.neighbors_for_convergence > MAX_ITERATIONS_NEIGHBORS:
                 error = "MAX_ITERATIONS_NEIGHBORS reached: {:d}".format(self.neighbors_for_convergence)
                 raise RuntimeError(error)
@@ -167,7 +167,7 @@ class LocalPotential1D:
         argument = 1j*2*np.pi*(np.arange(-kn,kn+1)[None,:,None]
                                *self.spatial_axis[:,None,None]) / self.total_potential_length
         wave_function = np.sum(np.exp(argument)*coefficients[None,:,band_min_index:band_max_index],axis=1)
-        return np.sqrt(self.cell_repetitions)*wave_function/np.sqrt(np.sum(abs(wave_function)**2))
+        return np.sqrt(self.cell_repetitions)*wave_function/np.sqrt(np.sum(np.abs(wave_function)**2))
 
     def plot_potential(self,ax=None):
         if ax is None:
@@ -185,7 +185,7 @@ class LocalPotential1D:
         if ax == None:
             fig,ax = plt.subplots()
         wave_function = self.get_real_space_states(q=wave_vector, band_min_index=band_index)
-        ax.plot(self.spatial_axis, abs(wave_function),linewidth=2)
+        ax.plot(self.spatial_axis, np.abs(wave_function),linewidth=2)
         ax.plot(self.spatial_axis, np.real(wave_function),'--')
         ax.plot(self.spatial_axis, np.imag(wave_function),':')
 
@@ -195,7 +195,7 @@ class LocalPotential1D:
         energy = self.get_eigenvalues(q=q)[band]
         wave_function = self.get_real_space_states(q=q,band_min_index=band)
         hamiltonian = self.get_real_space_hamiltonian(q=q)
-        deviation = sum(abs(wave_function - np.dot(hamiltonian,wave_function)/energy))
+        deviation = sum(np.abs(wave_function - np.dot(hamiltonian,wave_function)/energy))
         return deviation
 
     def plot_check_real_space_eigenstate(self,q=0.0, band=0):
@@ -204,10 +204,10 @@ class LocalPotential1D:
         energy = self.get_eigenvalues(q=q)[band]
         wave_function = self.get_real_space_states(q=q,band_min_index=band)
         hamiltonian = self.get_real_space_hamiltonian(q=q)
-        deviation = sum(abs(wave_function - np.dot(hamiltonian,wave_function)/energy))
+        deviation = sum(np.abs(wave_function - np.dot(hamiltonian,wave_function)/energy))
         plt.figure()
-        plt.plot(abs(wave_function),'k')
-        plt.plot(abs(np.dot(hamiltonian,wave_function))/abs(energy),'r')
+        plt.plot(np.abs(wave_function),'k')
+        plt.plot(np.abs(np.dot(hamiltonian,wave_function))/np.abs(energy),'r')
 
         plt.plot(np.real(wave_function),'k--')
         plt.plot(np.real(np.dot(hamiltonian,wave_function))/(energy),'r--')
@@ -216,7 +216,7 @@ class LocalPotential1D:
         plt.plot(np.imag(np.dot(hamiltonian,wave_function))/(energy),'r:')
 
         plt.figure()
-        plt.plot(abs(wave_function)-abs(np.dot(hamiltonian,wave_function))/abs(energy))
+        plt.plot(np.abs(wave_function)-np.abs(np.dot(hamiltonian,wave_function))/np.abs(energy))
         plt.show()
         return deviation
 

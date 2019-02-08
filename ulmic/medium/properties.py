@@ -149,6 +149,7 @@ class MediumProperties(MediumManipulator):
             for alpha in range(ndims):
                 inverse_mass[:, n, alpha, alpha] += 1.0
             # replace the "unreliable" data with that from FD_inverse_mass
+            denominator_is_small[:, n] = False
             denominator_is_small = np.any(denominator_is_small, axis=1) # (nk,)
             for alpha in range(ndims):
                 for beta in range(alpha + 1):
@@ -270,9 +271,9 @@ class MediumProperties(MediumManipulator):
             # enforce the symmetry
             inverse_mass_cartesian1d = 0.5 * (inverse_mass_cartesian1d + \
                 inverse_mass_cartesian1d.swapaxes(2, 3))
-            return inverse_mass_cartesian1d, inverse_mass_cartesian3d
+            return inverse_mass_cartesian1d
         else:
-            logging.warning('Cannot calculate derivative of diagonal'
+            raise RuntimeError('Cannot calculate derivative of diagonal'
                             'momentum matrix elements'
                             'for incomplete Brillouin zone.')
 

@@ -136,7 +136,7 @@ class ReciprocalSpaceInterpolator:
             assert(np.all(lower_threshold < upper_threshold))
             # combine the interpolation methods at each data point
             dims = np.array(Y.shape)
-            dims[:2] = 1
+            dims[0] = 1
             lower_threshold = np.asarray(lower_threshold).reshape(dims)
             upper_threshold = np.asarray(upper_threshold).reshape(dims)
             weights = np.sin(np.pi/2.0 * (Y - lower_threshold) / \

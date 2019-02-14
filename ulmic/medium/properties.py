@@ -105,8 +105,8 @@ class MediumProperties(MediumManipulator):
             logging.warning('Cannot calculate derivative of energy bands'
                             'for incomplete Brilluoin zone.')
 
-    def calculate_inverse_mass(self, gap_threshold=1e-3, \
-        finite_difference_at_Gamma_point=True):
+    def calculate_inverse_mass(self, gap_threshold=1e-3,
+            finite_difference_at_Gamma_point=True):
         """ Compute the inverse-mass tensor at each crystal momentum in each band.
 
         CURRENTLY, THIS FUNCTION WORKS ONLY IN THREE SPATIAL DIMENSIONS
@@ -142,7 +142,7 @@ class MediumProperties(MediumManipulator):
                     for beta in range(alpha + 1):
                         p_beta  = self.momentum[...,beta]
                         p_alpha = self.momentum[...,alpha]
-                        numerator = 2 * np.real(self.momentum[:, n, n1, alpha] * \
+                        numerator = 2 * np.real(self.momentum[:, n, n1, alpha] *
                             self.momentum[:, n1, n, beta])
                         numerator[denominator_is_small[:, n1]] = 0.0
                         inverse_mass[:, n, alpha, beta] += numerator / denominator[:, n1]
@@ -215,13 +215,13 @@ class MediumProperties(MediumManipulator):
         inverse_mass[:, 1, 1] = Ek[:, 1, 2, 1] - 2 * Ek[:, 1, 1, 1] + Ek[:, 1, 0, 1]
         inverse_mass[:, 2, 2] = Ek[:, 1, 1, 2] - 2 * Ek[:, 1, 1, 1] + Ek[:, 1, 1, 0]
         # evaluate the off-diagonal elements of the inverse mass tensor
-        inverse_mass[:, 0, 1] = 0.25 * (Ek[:, 2, 2, 1] - Ek[:, 2, 0, 1] - \
+        inverse_mass[:, 0, 1] = 0.25 * (Ek[:, 2, 2, 1] - Ek[:, 2, 0, 1] -
             Ek[:, 0, 2, 1] + Ek[:, 0, 0, 1])
         inverse_mass[:, 1, 0] = inverse_mass[:, 0, 1]
-        inverse_mass[:, 0, 2] = 0.25 * (Ek[:, 2, 1, 2] - Ek[:, 2, 1, 0] - \
+        inverse_mass[:, 0, 2] = 0.25 * (Ek[:, 2, 1, 2] - Ek[:, 2, 1, 0] -
             Ek[:, 0, 1, 2] + Ek[:, 0, 1, 0])
         inverse_mass[:, 2, 0] = inverse_mass[:, 0, 2]
-        inverse_mass[:, 1, 2] = 0.25 * (Ek[:, 1, 2, 2] - Ek[:, 1, 2, 0] - \
+        inverse_mass[:, 1, 2] = 0.25 * (Ek[:, 1, 2, 2] - Ek[:, 1, 2, 0] -
             Ek[:, 1, 0, 2] + Ek[:, 1, 0, 0])
         inverse_mass[:, 2, 1] = inverse_mass[:, 1, 2]
         # finalize
@@ -269,7 +269,7 @@ class MediumProperties(MediumManipulator):
                             inverse_mass_cartesian1d[self.klist3d[i1,i2,i3],...] = \
                                 inverse_mass_cartesian3d[i1,i2,i3,...]
             # enforce the symmetry
-            inverse_mass_cartesian1d = 0.5 * (inverse_mass_cartesian1d + \
+            inverse_mass_cartesian1d = 0.5 * (inverse_mass_cartesian1d +
                 inverse_mass_cartesian1d.swapaxes(2, 3))
             return inverse_mass_cartesian1d
         else:

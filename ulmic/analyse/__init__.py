@@ -20,8 +20,8 @@ class FinalStateAnalyzer:
         self.rho_diagonal = np.sum(np.real(self.psi * self.psi.conj()), axis=-1) # (nk, nb)
 
 
-    def delta_response(self, t0, A0, t_array, \
-        ignore_coherences=False, subtract_initial_state=False):
+    def delta_response(self, t0, A0, t_array,
+            ignore_coherences=False, subtract_initial_state=False):
         """ Return the electric current density induced by A(t) = A_0 delta(t-t0).
 
         The function uses an analytical formula for evaluating the linear response.
@@ -117,7 +117,7 @@ class FinalStateAnalyzer:
         J_residual *= - normalization_factor
         return J_residual
 
-    def average_inverse_mass(self, gap_threshold=1e-4, sum_over_bands=True, \
+    def average_inverse_mass(self, gap_threshold=1e-4, sum_over_bands=True,
         sum_over_k=True, initial_band=None, inverse_mass=None):
         """ Return the tensor of the averaged inverse mass.
 
@@ -198,8 +198,8 @@ class FinalStateAnalyzer:
             numerator = np.sum(numerator, axis=0)
         return numerator / denominator
 
-    def cycle_averaged_inverse_mass(self, E0_vector, omega0, \
-        sum_over_bands=True, sum_over_k=True, CAIM=None):
+    def cycle_averaged_inverse_mass(self, E0_vector, omega0,
+            sum_over_bands=True, sum_over_k=True, CAIM=None):
         '''Compute the cycle-averaged inverse mass.
 
         Parameters
@@ -265,8 +265,8 @@ class FinalStateAnalyzer:
             numerator = np.sum(numerator, axis=0)
         return numerator / denominator
 
-    def Drude_response(self, no_Drude_response_from_full_bands=False, \
-        gap_threshold=1e-4, inverse_mass=None):
+    def Drude_response(self, no_Drude_response_from_full_bands=False,
+            gap_threshold=1e-4, inverse_mass=None):
         """ Return the intraband electric-current response to vector potential.
 
         The function evaluates the part of the linear response that is due to
@@ -314,8 +314,8 @@ class FinalStateAnalyzer:
         return sigma
 
 
-    def linear_response(self, omega_array, decoherence_rate=2.418884e-04, \
-            subtract_initial_state=False, no_Drude_response_from_full_bands=False, \
+    def linear_response(self, omega_array, decoherence_rate=2.418884e-04,
+            subtract_initial_state=False, no_Drude_response_from_full_bands=False,
             gap_threshold=1e-4, inverse_mass=None):
         """ Return the intraband electric-current response to vector potential.
 
@@ -405,8 +405,8 @@ class FinalStateAnalyzer:
         sigma += sigma_Drude[np.newaxis, :, :]
         return sigma
 
-    def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False, \
-        gap_threshold=1e-4, inverse_mass=None):
+    def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False,
+            gap_threshold=1e-4, inverse_mass=None):
         """ Return the tensor of the Drude susceptibility.
 
         The function evaluates the part of the linear response that is due to
@@ -432,13 +432,13 @@ class FinalStateAnalyzer:
         """
         nw = len(omega_array)
         omega_squared = omega_array**2
-        sigma = self.Drude_response(no_Drude_response_from_full_bands, \
+        sigma = self.Drude_response(no_Drude_response_from_full_bands,
             gap_threshold, inverse_mass)
         chi = sigma[np.newaxis, :] / omega_squared[:, np.newaxis, np.newaxis]
         return chi
 
-    def linear_susceptibility(self, omega_array, decoherence_rate=2.418884e-04, \
-            subtract_initial_state=False, no_Drude_response_from_full_bands=False, \
+    def linear_susceptibility(self, omega_array, decoherence_rate=2.418884e-04,
+            subtract_initial_state=False, no_Drude_response_from_full_bands=False,
             gap_threshold=1e-4, inverse_mass=None):
         """ Return the tensor of the linear susceptibility.
 
@@ -472,8 +472,8 @@ class FinalStateAnalyzer:
         """
         nw = len(omega_array)
         omega_squared = omega_array**2
-        sigma = self.linear_response(omega_array, decoherence_rate, \
-            subtract_initial_state, no_Drude_response_from_full_bands, \
+        sigma = self.linear_response(omega_array, decoherence_rate,
+            subtract_initial_state, no_Drude_response_from_full_bands,
             gap_threshold, inverse_mass)
         chi = sigma / omega_squared[:, np.newaxis, np.newaxis]
         return chi

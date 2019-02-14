@@ -139,7 +139,7 @@ class ReciprocalSpaceInterpolator:
             dims[0] = 1
             lower_threshold = np.asarray(lower_threshold).reshape(dims)
             upper_threshold = np.asarray(upper_threshold).reshape(dims)
-            weights = np.sin(np.pi/2.0 * (Y - lower_threshold) / \
+            weights = np.sin(np.pi/2.0 * (Y - lower_threshold) /
                 (upper_threshold - lower_threshold))**2
             weights[Y <= lower_threshold] = 0.0
             weights[Y >= upper_threshold] = 1.0
@@ -206,7 +206,7 @@ class ReciprocalSpaceInterpolator:
         if Fourier_weight > 0.0:
             # Fourier interpolation
             Fdata = np.fft.ifftn(data, axes = (0,1))
-            result_Fourier = np.zeros((N_xi1, N_xi2) + self.extra_dimensions, \
+            result_Fourier = np.zeros((N_xi1, N_xi2) + self.extra_dimensions,
                 dtype=Fdata.dtype)
             dims = np.ones(len(result_Fourier.shape), dtype=np.intp)
             dims[0] = N_xi1
@@ -266,7 +266,7 @@ class ReciprocalSpaceInterpolator:
             dims[:2] = 1
             lower_threshold = np.asarray(lower_threshold).reshape(dims)
             upper_threshold = np.asarray(upper_threshold).reshape(dims)
-            weights = np.sin(np.pi/2.0 * (Y - lower_threshold) / \
+            weights = np.sin(np.pi/2.0 * (Y - lower_threshold) /
                 (upper_threshold - lower_threshold))**2
             weights[Y <= lower_threshold] = 0.0
             weights[Y >= upper_threshold] = 1.0

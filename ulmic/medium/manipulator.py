@@ -139,7 +139,7 @@ class MediumManipulator(LoadHdf5):
 
         if self.nk%(total_factor) == 0:
             i0 = self.klist3d[0,0,0]
-            indices = np.rint(np.array(size)[np.newaxis,:] * (self.klist1d - \
+            indices = np.rint(np.array(size)[np.newaxis,:] * (self.klist1d -
                 self.klist1d[i0][np.newaxis,:])).astype(np.intp)
             # boolean_vector = np.isclose(indices % nk_factorization, 0.0)
             boolean_vector = (indices % nk_factorization == 0)

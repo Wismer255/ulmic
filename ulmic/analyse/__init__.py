@@ -316,8 +316,7 @@ class FinalStateAnalyzer:
 
     def linear_response(self, omega_array, decoherence_rate=2.418884e-04, \
             subtract_initial_state=False, no_Drude_response_from_full_bands=False, \
-            adiabatic_corrections="final", gap_threshold=1e-4, \
-            inverse_mass=None):
+            gap_threshold=1e-4, inverse_mass=None):
         """ Return the intraband electric-current response to vector potential.
 
         The function uses an analytical formula for evaluating the linear response of an
@@ -338,10 +337,7 @@ class FinalStateAnalyzer:
             The decay rate of the polarization induced by interband transitions.
         no_Drude_response_from_full_bands : bool
             If True, the term responsible for the intraband motion will be dropped for
-            uniformly populated bands. This is relevant only if adiabatic_corrections is
-            set to "final".
-        adiabatic_corrections : string
-            AN OBSOLETE PARAMETER
+            uniformly populated bands.
         gap_threshold: scalar
             terms involving transitions between energy states separated by a gap
             smaller this value will be ignored.
@@ -358,11 +354,6 @@ class FinalStateAnalyzer:
         nb = self.medium.nb
         nw = len(omega_array)
         sigma = np.zeros((nw, 3, 3), dtype=np.complex)
-        adiabatic_corrections = adiabatic_corrections.lower()
-        if adiabatic_corrections != "final":
-            print("""WARNING: 'adiabatic_corrections' is an obsolete parameter. In the
-current implementation, the correction is always applied in a way that would
-previously be called 'final'.""")
         # epsilon = np.finfo(np.float).eps # a negligibly small real number
         if inverse_mass is None:
             inverse_mass = self.medium.calculate_inverse_mass(gap_threshold)
@@ -379,13 +370,14 @@ previously be called 'final'.""")
             # if np.max(rho_diagonal[:, n]) < epsilon:
             #     continue
             omega_mn = self.medium.energy - self.medium.energy[:, n, np.newaxis] # (nk, nb)
-            gamma = decoherence_rate * np.ones((nk, nb))
-            # make sure that dephasing broadens absorption lines by not more than
-            # a fraction of the energy spacing between the initial and final states
-            max_broadening_fraction = 0.1
-            mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
-            gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
-            gamma = gamma[np.newaxis, :, :]
+            gamma = decoherence_rate
+            ## gamma = decoherence_rate * np.ones((nk, nb))
+            ## # make sure that dephasing broadens absorption lines by not more than
+            ## # a fraction of the energy spacing between the initial and final states
+            ## max_broadening_fraction = 0.1
+            ## mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
+            ## gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
+            ## gamma = gamma[np.newaxis, :, :]
             # evaluate denominators
             d0 = omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
             d1 = omega_mn[np.newaxis, :, :] - \
@@ -447,7 +439,7 @@ previously be called 'final'.""")
 
     def linear_susceptibility(self, omega_array, decoherence_rate=2.418884e-04, \
             subtract_initial_state=False, no_Drude_response_from_full_bands=False, \
-            adiabatic_corrections="final", gap_threshold=1e-4, inverse_mass=None):
+            gap_threshold=1e-4, inverse_mass=None):
         """ Return the tensor of the linear susceptibility.
 
         The function uses an analytical formula for evaluating the linear response of an excited state.
@@ -465,10 +457,7 @@ previously be called 'final'.""")
             The decay rate of the polarization induced by interband transitions.
         no_Drude_response_from_full_bands : bool
             If True, the term responsible for the intraband motion will be dropped for
-            uniformly populated bands. This is relevant only if adiabatic_corrections is
-            set to "final".
-        adiabatic_corrections : string
-            AN OBSOLETE PARAMETER
+            uniformly populated bands.
         gap_threshold: scalar
             terms involving transitions between energy states separated by a gap
             smaller this value will be ignored.
@@ -485,7 +474,7 @@ previously be called 'final'.""")
         omega_squared = omega_array**2
         sigma = self.linear_response(omega_array, decoherence_rate, \
             subtract_initial_state, no_Drude_response_from_full_bands, \
-            adiabatic_corrections, gap_threshold, inverse_mass)
+            gap_threshold, inverse_mass)
         chi = sigma / omega_squared[:, np.newaxis, np.newaxis]
         return chi
 

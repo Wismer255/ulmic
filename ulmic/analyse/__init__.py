@@ -316,7 +316,7 @@ class FinalStateAnalyzer:
 
     def linear_response(self, omega_array, decoherence_rate=2.418884e-04,
             subtract_initial_state=False, no_Drude_response_from_full_bands=False,
-            gap_threshold=1e-4, inverse_mass=None):
+            gap_threshold=1e-4, inverse_mass=None, adjust_decoherence=False):
         """ Return the intraband electric-current response to vector potential.
 
         The function uses an analytical formula for evaluating the linear response of an
@@ -344,6 +344,10 @@ class FinalStateAnalyzer:
         inverse_mass : if None, then the function will call
             medium.calculate_inverse_mass(gap_threshold) to evaluate it;
             otherwise, this function will use the provided band curvatures.
+        adjust_decoherence : if True, the decoherence rate is adjusted for response
+            at low frequencies to ensure that dephasing broadens absorption lines by
+            not more than a fraction of the energy spacing between the initial and
+            final states.
 
         Returns
         -------
@@ -370,14 +374,16 @@ class FinalStateAnalyzer:
             # if np.max(rho_diagonal[:, n]) < epsilon:
             #     continue
             omega_mn = self.medium.energy - self.medium.energy[:, n, np.newaxis] # (nk, nb)
-            gamma = decoherence_rate
-            ## gamma = decoherence_rate * np.ones((nk, nb))
-            ## # make sure that dephasing broadens absorption lines by not more than
-            ## # a fraction of the energy spacing between the initial and final states
-            ## max_broadening_fraction = 0.1
-            ## mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
-            ## gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
-            ## gamma = gamma[np.newaxis, :, :]
+            if adjust_decoherence:
+                # make sure that dephasing broadens absorption lines by not more than
+                # a fraction of the energy spacing between the initial and final states
+                gamma = decoherence_rate * np.ones((nk, nb))
+                max_broadening_fraction = 0.1
+                mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
+                gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
+                gamma = gamma[np.newaxis, :, :]
+            else:
+                gamma = decoherence_rate
             # evaluate denominators
             d0 = omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
             d1 = omega_mn[np.newaxis, :, :] - \
@@ -439,7 +445,7 @@ class FinalStateAnalyzer:
 
     def linear_susceptibility(self, omega_array, decoherence_rate=2.418884e-04,
             subtract_initial_state=False, no_Drude_response_from_full_bands=False,
-            gap_threshold=1e-4, inverse_mass=None):
+            gap_threshold=1e-4, inverse_mass=None, adjust_decoherence=False):
         """ Return the tensor of the linear susceptibility.
 
         The function uses an analytical formula for evaluating the linear response of an excited state.
@@ -464,6 +470,10 @@ class FinalStateAnalyzer:
         inverse_mass : if None, then the function will call
             medium.calculate_inverse_mass(gap_threshold) to evaluate it;
             otherwise, this function will use the provided band curvatures.
+        adjust_decoherence : if True, the decoherence rate is adjusted for response
+            at low frequencies to ensure that dephasing broadens absorption lines by
+            not more than a fraction of the energy spacing between the initial and
+            final states.
 
         Returns
         -------
@@ -474,7 +484,7 @@ class FinalStateAnalyzer:
         omega_squared = omega_array**2
         sigma = self.linear_response(omega_array, decoherence_rate,
             subtract_initial_state, no_Drude_response_from_full_bands,
-            gap_threshold, inverse_mass)
+            gap_threshold, inverse_mass, adjust_decoherence)
         chi = sigma / omega_squared[:, np.newaxis, np.newaxis]
         return chi
 

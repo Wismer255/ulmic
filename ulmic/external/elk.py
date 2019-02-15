@@ -145,7 +145,7 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     for i in range(nk):
         buffer =3*k_bytes+n_bytes + i*(3*k_bytes+n_bytes+ pmat_bytes*3*nb*nb*2)
         #print(buffer)
-        with open('../PMAT.OUT','rb') as f:
+        with open(input_momentum,'rb') as f:
             f.seek(buffer)
             data = np.fromfile(f, dtype = 'float64')
 

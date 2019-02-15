@@ -347,7 +347,7 @@ class FinalStateAnalyzer:
             otherwise, this function will use the provided band curvatures.
         adjust_decoherence : if True, the decoherence rate is adjusted for response
             at low frequencies to ensure that dephasing broadens absorption lines by
-            not more than a fraction of the energy spacing between the initial and
+            no more than a fraction of the energy spacing between the initial and
             final states.
 
         Returns
@@ -473,7 +473,7 @@ class FinalStateAnalyzer:
             otherwise, this function will use the provided band curvatures.
         adjust_decoherence : if True, the decoherence rate is adjusted for response
             at low frequencies to ensure that dephasing broadens absorption lines by
-            not more than a fraction of the energy spacing between the initial and
+            no more than a fraction of the energy spacing between the initial and
             final states.
 
         Returns

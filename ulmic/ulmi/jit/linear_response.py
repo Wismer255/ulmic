@@ -4,7 +4,7 @@ import sys
 
 @njit(parallel=True)
 def jit_linear_interband_response(omega, decoherence_rate,
-            subtract_initial_state, gap_threshold, inverse_mass, adjust_decoherence,
+            gap_threshold, inverse_mass, adjust_decoherence,
             rho_diagonal, p_matrix, spin_factor, cell_volume, band_energies):
         """ Return the intraband electric-current response to vector potential.
 
@@ -21,9 +21,6 @@ def jit_linear_interband_response(omega, decoherence_rate,
             An array of circular frequencies, at which the linear response must be evaluated.
         decoherence_rate : scalar
             The decay rate of the polarization induced by interband transitions.
-        subtract_initial_state : bool
-            If True, the function returns the difference between the response of the final
-            state and that of the initial (ground) state.
         gap_threshold: scalar
             terms involving transitions between energy states separated by a gap
             smaller this value will be ignored.

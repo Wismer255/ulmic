@@ -369,9 +369,9 @@ class FinalStateAnalyzer:
         p_matrix = self.medium.momentum # (nk, nb, nb, 3)
         for iw in range(nw):
             sigma[iw,:,:] = jit_linear_interband_response(omega_array[iw],
-                decoherence_rate, subtract_initial_state, gap_threshold,
-                inverse_mass, adjust_decoherence, rho_diagonal, p_matrix,
-                self.medium.spin_factor, self.medium.volume, self.medium.energy)
+                decoherence_rate, gap_threshold, inverse_mass, adjust_decoherence,
+                rho_diagonal, p_matrix, self.medium.spin_factor, self.medium.volume,
+                self.medium.energy)
         ## normalization_factor = self.medium.spin_factor / (self.medium.volume * nk)
         ## # evaluate the contributions from momentum matrix elements
         ## for n in range(nb):

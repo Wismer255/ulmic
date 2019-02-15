@@ -1,5 +1,6 @@
-from ulmic.atomic_units import AtomicUnits
 import numpy as np
+from ulmic.atomic_units import AtomicUnits
+from ulmic.ulmi.jit.linear_response import jit_linear_interband_response
 # from ulmic.result import Result
 # from ulmic.medium import Medium
 
@@ -330,11 +331,11 @@ class FinalStateAnalyzer:
         ----------
         omega_array : an array of shape (nw,)
             An array of circular frequencies, at which the linear response must be evaluated.
+        decoherence_rate : scalar
+            The decay rate of the polarization induced by interband transitions.
         subtract_initial_state : bool
             If True, the function returns the difference between the response of the final
             state and that of the initial (ground) state.
-        decoherence_rate : scalar
-            The decay rate of the polarization induced by interband transitions.
         no_Drude_response_from_full_bands : bool
             If True, the term responsible for the intraband motion will be dropped for
             uniformly populated bands.
@@ -354,62 +355,62 @@ class FinalStateAnalyzer:
         sigma : an array of shape (nw, 3, 3)
             The last two dimensions are Cartesian indices.
         """
-        nk = self.medium.nk
-        nb = self.medium.nb
+        ## nk = self.medium.nk
+        ## nb = self.medium.nb
         nw = len(omega_array)
         sigma = np.zeros((nw, 3, 3), dtype=np.complex)
-        # epsilon = np.finfo(np.float).eps # a negligibly small real number
         if inverse_mass is None:
             inverse_mass = self.medium.calculate_inverse_mass(gap_threshold)
-        p_matrix = self.medium.momentum # (nk, nb, nb, 3)
         if subtract_initial_state:
             rho_diagonal = self.rho_diagonal.copy()
             rho_diagonal[:, :self.medium.nv] -= 1.0
         else:
             rho_diagonal = self.rho_diagonal
-        normalization_factor = self.medium.spin_factor / (self.medium.volume * nk)
-        # evaluate the contributions from momentum matrix elements
-        for n in range(nb):
-            # # to speed up calculations, skip bands without population
-            # if np.max(rho_diagonal[:, n]) < epsilon:
-            #     continue
-            omega_mn = self.medium.energy - self.medium.energy[:, n, np.newaxis] # (nk, nb)
-            if adjust_decoherence:
-                # make sure that dephasing broadens absorption lines by not more than
-                # a fraction of the energy spacing between the initial and final states
-                gamma = decoherence_rate * np.ones((nk, nb))
-                max_broadening_fraction = 0.1
-                mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
-                gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
-                gamma = gamma[np.newaxis, :, :]
-            else:
-                gamma = decoherence_rate
-            # evaluate denominators
-            d0 = omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
-            d1 = omega_mn[np.newaxis, :, :] - \
-                omega_array[:, np.newaxis, np.newaxis] - 1j * gamma
-            d2 = omega_mn[np.newaxis, :, :] + \
-                omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
-            mask1 = (np.abs(omega_mn) < gap_threshold)
-            mask2 = np.tile(mask1, (nw,1,1)) # (nw, nk, nb)
-            # iterate over the Cartesian indices
-            for ialpha in range(3):
-                for ibeta in range(3):
-                    pp = p_matrix[:, n, :, ialpha] * p_matrix[:, :, n, ibeta] # (nk, nb)
-                    pp_times_rho = pp * rho_diagonal[:, n, np.newaxis]
-                    numerator = 2j * np.imag(pp_times_rho) / d0 + \
-                      pp_times_rho / d1 + pp_times_rho.conj() / d2
-                    numerator[mask2] = 0.0
-                    denominator = omega_mn**2
-                    denominator[mask1] = 1.0
-                    denominator = np.tile(denominator, (nw,1,1))
-                    sigma[:, ialpha, ibeta] += np.sum(numerator / denominator, axis=(1,2))
-        sigma *= normalization_factor
-        sigma = sigma * omega_array.reshape((nw, 1, 1))**2
+        p_matrix = self.medium.momentum # (nk, nb, nb, 3)
+        for iw in range(nw):
+            sigma[iw,:,:] = jit_linear_interband_response(omega_array[iw],
+                decoherence_rate, subtract_initial_state, gap_threshold,
+                inverse_mass, adjust_decoherence, rho_diagonal, p_matrix,
+                self.medium.spin_factor, self.medium.volume, self.medium.energy)
+        ## normalization_factor = self.medium.spin_factor / (self.medium.volume * nk)
+        ## # evaluate the contributions from momentum matrix elements
+        ## for n in range(nb):
+        ##     omega_mn = self.medium.energy - self.medium.energy[:, n, np.newaxis] # (nk, nb)
+        ##     if adjust_decoherence:
+        ##         # make sure that dephasing broadens absorption lines by not more than
+        ##         # a fraction of the energy spacing between the initial and final states
+        ##         gamma = decoherence_rate * np.ones((nk, nb))
+        ##         max_broadening_fraction = 0.1
+        ##         mask = (max_broadening_fraction * np.abs(omega_mn) < decoherence_rate)
+        ##         gamma[mask] = max_broadening_fraction * np.abs(omega_mn[mask])
+        ##         gamma = gamma[np.newaxis, :, :]
+        ##     else:
+        ##         gamma = decoherence_rate
+        ##     # evaluate denominators
+        ##     d0 = omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
+        ##     d1 = omega_mn[np.newaxis, :, :] - \
+        ##         omega_array[:, np.newaxis, np.newaxis] - 1j * gamma
+        ##     d2 = omega_mn[np.newaxis, :, :] + \
+        ##         omega_array[:, np.newaxis, np.newaxis] + 1j * gamma
+        ##     mask1 = (np.abs(omega_mn) < gap_threshold)
+        ##     mask2 = np.tile(mask1, (nw,1,1)) # (nw, nk, nb)
+        ##     # iterate over the Cartesian indices
+        ##     for ialpha in range(3):
+        ##         for ibeta in range(3):
+        ##             pp = p_matrix[:, n, :, ialpha] * p_matrix[:, :, n, ibeta] # (nk, nb)
+        ##             pp_times_rho = pp * rho_diagonal[:, n, np.newaxis]
+        ##             numerator = 2j * np.imag(pp_times_rho) / d0 + \
+        ##               pp_times_rho / d1 + pp_times_rho.conj() / d2
+        ##             numerator[mask2] = 0.0
+        ##             denominator = omega_mn**2
+        ##             denominator[mask1] = 1.0
+        ##             denominator = np.tile(denominator, (nw,1,1))
+        ##             sigma[:, ialpha, ibeta] += np.sum(numerator / denominator, axis=(1,2))
+        ## sigma *= normalization_factor
+        ## sigma = sigma * omega_array.reshape((nw, 1, 1))**2
         # evaluate the contributions from the intraband motion (Drude response)
         sigma_Drude = self.Drude_response(no_Drude_response_from_full_bands, gap_threshold)
-        sigma += sigma_Drude[np.newaxis, :, :]
-        return sigma
+        return sigma + sigma_Drude[np.newaxis, :, :]
 
     def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False,
             gap_threshold=1e-4, inverse_mass=None):

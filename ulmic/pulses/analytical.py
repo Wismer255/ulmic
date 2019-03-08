@@ -63,11 +63,11 @@ class AnalyticalPulse:
         if self.variables['envelope'] == 'gauss':
             vector_potential += self.get_gaussian_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'constant':
-            vector_potential += self.variables['E0']*self.variables['polarisation_vector']
+            vector_potential += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'erf':
             vector_potential += self.get_erf_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'slope':
-            vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector']
+            vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             vector_potential += self.get_cos4_vector_potential(self.variables,t)
         else:
@@ -79,11 +79,11 @@ class AnalyticalPulse:
         if self.variables['envelope'] == 'gauss':
             electric_field += self.get_gaussian_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'constant':
-            electric_field += self.variables['E0']*self.variables['polarisation_vector']
+            electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'erf':
             electric_field += self.get_erf_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'slope':
-            electric_field += self.variables['E0']*self.variables['polarisation_vector']
+            electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             electric_field += self.get_cos4_electric_field(self.variables,t)
         else:
@@ -147,19 +147,19 @@ class AnalyticalPulse:
         phases = 1j*np.exp(-1j*(cep + omega*(time-delay)))
         diff_env = (-4*np.log(2)*(time-delay)/FWHM**2)*env
         diff_phases = -1j*omega*phases
-        return np.real(env*diff_phases*polarisation_vector + diff_env*phases*polarisation_vector)
+        return np.real((env*diff_phases + diff_env*phases) * polarisation_vector)
 
     def get_erf_vector_potential(self,pulse,time):
         E0 =  pulse['E0']
         FWHM = pulse['FWHM']
-        polarisation_vector = pulse['polarisation_vector']
+        polarisation_vector = pulse['polarisation_vector'].real
         delay = pulse['delay']
         return E0*(1+erf((time-delay)/FWHM))*polarisation_vector
 
     def get_erf_electric_field(self,pulse,time):
         E0 =  pulse['E0']
         FWHM = pulse['FWHM']
-        polarisation_vector = pulse['polarisation_vector']
+        polarisation_vector = pulse['polarisation_vector'].real
         delay = pulse['delay']
         return -(E0/FWHM)*(2.0/np.sqrt(np.pi))*(np.exp(-((time-delay)/FWHM)**2))*polarisation_vector
 
@@ -171,12 +171,15 @@ class AnalyticalPulse:
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
         cep = pulse['cep']
+        if np.iscomplexobj(polarisation_vector):
+            cep = cep + np.angle(polarisation_vector)
+            polarisation_vector = np.real(polarisation_vector)
 
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
-        H=np.heaviside(tau_l-np.abs(time-delay),0.5)
-        pulse_cos4= -(E0/omega )*((np.cos(np.pi*(time-delay)/(2*tau_l)))**4)*np.sin(omega*(time-delay)+cep)
-
-        return  H*pulse_cos4*polarisation_vector
+        t = time - delay
+        H=np.heaviside(tau_l-np.abs(t),0.5)
+        pulse_cos4 = -E0/omega * (np.cos(np.pi*t/(2*tau_l)))**4 * np.sin(omega*t+cep)
+        return H*pulse_cos4*polarisation_vector
 
     def get_cos4_electric_field(self,pulse,time):
         E0 =  pulse['E0']
@@ -186,10 +189,17 @@ class AnalyticalPulse:
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
         cep = pulse['cep']
+        if np.iscomplexobj(polarisation_vector):
+            cep = cep + np.angle(polarisation_vector)
+            polarisation_vector = np.real(polarisation_vector)
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
-        H=np.heaviside(tau_l-np.abs(time-delay),0.5)
-        field_cos4=(2*np.pi*E0/(omega*tau_l))*(np.sin((np.pi*(time-delay))/(2*tau_l)))*((np.cos((np.pi*(time-delay))/(2*tau_l)))**3)*(np.sin(omega*(time-delay)+cep))\
-                                          -E0*((np.cos((np.pi*(time-delay))/(2*tau_l)))**4)*(np.cos(omega*(time-delay)+cep))
-
-        return  H*(-field_cos4)*polarisation_vector
+        t = time - delay
+        theta = np.pi*t / (2*tau_l)
+        cos_term = np.cos(theta)
+        sin_term = np.sin(theta)
+        H = np.heaviside(tau_l-np.abs(t), 0.5)
+        field_cos4 = -E0 * cos_term**3 * \
+            (2*np.pi/(omega*tau_l) * sin_term * np.sin(omega*t+cep) -
+                cos_term * np.cos(omega*t+cep))
+        return H * field_cos4 * polarisation_vector
 

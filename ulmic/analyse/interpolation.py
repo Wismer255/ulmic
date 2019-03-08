@@ -148,18 +148,18 @@ class ReciprocalSpaceInterpolator:
 
 
     def interpolate_reduced2D(self, xi1, xi2, projection_axis=2, Fourier_weight=0.9):
-        """ Return interpolated projected data.
+        r""" Return interpolated projected data.
 
         This function projects the 3D data along one of the primitive
         reciprocal-space vectors and then interpolates the 2D data.
         If projection_axis=2, the function returns
-        \\[ y(\\xi_1, \\xi_2) = \\int_{-1/2}^{1/2} d\\xi_3
-            \mbox{data}\\left(\\mathbf{k}=\\sum_{i=1}^3 \\xi_i \\mathbf{b}_i \\right),
-        \\]
-        where $\\mathbf{b}_i$ are the primitive vectors of the reciprocal lattice.
-        The coordinates of the crystal momentum in the basis of the $\\mathbf{b}_i$
+        \[ y(\xi_1, \xi_2) = \int_{-1/2}^{1/2} d\xi_3
+            \mbox{data}\left(\mathbf{k}=\sum_{i=1}^3 \xi_i \mathbf{b}_i \right),
+        \]
+        where $\mathbf{b}_i$ are the primitive vectors of the reciprocal lattice.
+        The coordinates of the crystal momentum in the basis of the $\mathbf{b}_i$
         vectors can be expressed via the primitive vectors of the real-space lattice as
-        $\\xi_i = (\\mathbf{a}_i \\mathbf{k}) / (2 \\pi)$.
+        $\xi_i = (\mathbf{a}_i \mathbf{k}) / (2 \pi)$.
 
         Parameters
         ----------

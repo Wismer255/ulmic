@@ -16,7 +16,7 @@ nm_Eph = 2*pi*137.035999/(1/0.052917721)
 class AnalyticalPulse:
 
     def __init__(self, pulse_type):
-        """Specify pulse parameters.
+        r"""Specify pulse parameters.
 
             pulse_type:     either a string or a dictionary with the following keys
                             {'omega':0.05,'E0':0.01,'FWHM':5.0*fs_au,'delay':0.0,'cep':0.0,

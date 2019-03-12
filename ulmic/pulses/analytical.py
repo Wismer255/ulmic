@@ -129,7 +129,6 @@ class AnalyticalPulse:
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
         cep = pulse['cep']
-
         env = (E0/omega)*np.exp(-2*np.log(2)*(((time-delay)/FWHM)**2))
         phases = 1j*np.exp(-1j*(cep + omega*(time-delay)))
         return -env*np.real(phases*polarisation_vector)
@@ -142,7 +141,6 @@ class AnalyticalPulse:
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
         cep = pulse['cep']
-
         env = (E0/omega)*np.exp(-2*np.log(2)*(((time-delay)/FWHM)**2))
         phases = 1j*np.exp(-1j*(cep + omega*(time-delay)))
         diff_env = (-4*np.log(2)*(time-delay)/FWHM**2)*env
@@ -173,8 +171,7 @@ class AnalyticalPulse:
         cep = pulse['cep']
         if np.iscomplexobj(polarisation_vector):
             cep = cep + np.angle(polarisation_vector)
-            polarisation_vector = np.real(polarisation_vector)
-
+            polarisation_vector = np.abs(polarisation_vector)
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
         t = time - delay
         H=np.heaviside(tau_l-np.abs(t),0.5)
@@ -191,7 +188,7 @@ class AnalyticalPulse:
         cep = pulse['cep']
         if np.iscomplexobj(polarisation_vector):
             cep = cep + np.angle(polarisation_vector)
-            polarisation_vector = np.real(polarisation_vector)
+            polarisation_vector = np.abs(polarisation_vector)
         tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
         t = time - delay
         theta = np.pi*t / (2*tau_l)

@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from scipy.special import factorial, erf
+from scipy.special import factorial
 from ulmic.atomic_units import AtomicUnits
 from ulmic.pulses.interpolated import InterpPulses
 
@@ -64,8 +64,8 @@ class AnalyticalPulse:
             vector_potential += self.get_gaussian_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'constant':
             vector_potential += self.variables['E0']*self.variables['polarisation_vector'].real
-        elif self.variables['envelope'] == 'erf':
-            vector_potential += self.get_erf_vector_potential(self.variables,t)
+        elif self.variables['envelope'] == 'HCP':
+            vector_potential += self.get_HCP_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'slope':
             vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
@@ -80,8 +80,8 @@ class AnalyticalPulse:
             electric_field += self.get_gaussian_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'constant':
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
-        elif self.variables['envelope'] == 'erf':
-            electric_field += self.get_erf_electric_field(self.variables,t)
+        elif self.variables['envelope'] == 'HCP':
+            electric_field += self.get_HCP_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'slope':
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
@@ -147,19 +147,31 @@ class AnalyticalPulse:
         diff_phases = -1j*omega*phases
         return np.real((env*diff_phases + diff_env*phases) * polarisation_vector)
 
-    def get_erf_vector_potential(self,pulse,time):
+    def get_HCP_vector_potential(self,pulse,time):
         E0 =  pulse['E0']
         FWHM = pulse['FWHM']
         polarisation_vector = pulse['polarisation_vector'].real
         delay = pulse['delay']
-        return E0*(1+erf((time-delay)/FWHM))*polarisation_vector
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.125)))
+        t = time - delay
+        if t <= -tau_l:
+            A = 0.0
+        else:
+            t = min(t, tau_l)
+            phi = np.pi*t / tau_l
+            A = -E0 * (6*np.pi * (t + tau_l) + 8*tau_l * np.sin(phi) +
+                tau_l * np.sin(2*phi)) / (16 * np.pi)
+        return A * polarisation_vector
 
-    def get_erf_electric_field(self,pulse,time):
+    def get_HCP_electric_field(self,pulse,time):
         E0 =  pulse['E0']
         FWHM = pulse['FWHM']
         polarisation_vector = pulse['polarisation_vector'].real
         delay = pulse['delay']
-        return -(E0/FWHM)*(2.0/np.sqrt(np.pi))*(np.exp(-((time-delay)/FWHM)**2))*polarisation_vector
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.125)))
+        t = time - delay
+        H = np.heaviside(tau_l-np.abs(t), 0.0)
+        return H * E0 * np.cos(np.pi*t / (2*tau_l))**4 * polarisation_vector
 
     def get_cos4_vector_potential(self,pulse,time):
         E0 =  pulse['E0']
@@ -172,7 +184,7 @@ class AnalyticalPulse:
         if np.iscomplexobj(polarisation_vector):
             cep = cep + np.angle(polarisation_vector)
             polarisation_vector = np.abs(polarisation_vector)
-        tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.125)))
         t = time - delay
         H=np.heaviside(tau_l-np.abs(t),0.5)
         pulse_cos4 = -E0/omega * (np.cos(np.pi*t/(2*tau_l)))**4 * np.sin(omega*t+cep)
@@ -189,7 +201,7 @@ class AnalyticalPulse:
         if np.iscomplexobj(polarisation_vector):
             cep = cep + np.angle(polarisation_vector)
             polarisation_vector = np.abs(polarisation_vector)
-        tau_l=FWHM*np.pi/(4*np.arccos(2**(-0.125)))
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.125)))
         t = time - delay
         theta = np.pi*t / (2*tau_l)
         cos_term = np.cos(theta)

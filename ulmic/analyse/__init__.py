@@ -409,7 +409,7 @@ class FinalStateAnalyzer:
         ## sigma *= normalization_factor
         ## sigma = sigma * omega_array.reshape((nw, 1, 1))**2
         # evaluate the contributions from the intraband motion (Drude response)
-        sigma_Drude = self.Drude_response(no_Drude_response_from_full_bands, gap_threshold)
+        sigma_Drude = self.Drude_response(no_Drude_response_from_full_bands, gap_threshold, inverse_mass)
         return sigma + sigma_Drude[np.newaxis, :, :]
 
     def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False,

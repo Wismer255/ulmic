@@ -38,9 +38,9 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     input_kpoints  = os.path.join(path_to_elk_OUT,'KPOINTS.OUT')
     input_energy   = os.path.join(path_to_elk_OUT,'EIGVAL.OUT' )
     input_momentum = os.path.join(path_to_elk_OUT,'PMAT.OUT'   )
-    ################################################################################
+    ############################################################################
     #          Reading lattice vectors and reciprocal lattice vectors
-    ################################################################################
+    ############################################################################
 
     with open(input_lattice, 'r') as f:
         lattice_file = f.readlines()
@@ -53,17 +53,17 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
 
     for i in range(3):
         for j in range(3):
-            lattice_vectors[j,i]    = np.float(lattice_file[avec_ind+i].split()[j])
-            reciprocal_vectors[j,i] = np.float(lattice_file[bvec_ind+i].split()[j])
+            lattice_vectors[i,j]    = np.float(lattice_file[avec_ind+i].split()[j])
+            reciprocal_vectors[i,j] = np.float(lattice_file[bvec_ind+i].split()[j])
     '''
     cell_vol_ind = [x for x in range(len(lattice_file)) if 'Unit cell volume' in lattice_file[x]][0]
     unit_cell_volume = np.float(lattice_file[cell_vol_ind].split()[-1])
     BZ_vol_ind = [x for x in range(len(lattice_file)) if 'Brillouin zone volume' in lattice_file[x]][0]
     Brillouin_zone_volume = np.float(lattice_file[BZ_vol_ind].split()[-1])
     '''
-    ################################################################################
+    ############################################################################
     #              Reading kpoints grid size and grid shift from INFO.OUT
-    ################################################################################
+    ############################################################################
     with open(input_info, 'r') as f:
         info_file = f.readlines()
 
@@ -73,9 +73,9 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     kgrid_offset_index = [np.int(x) for x in range(len(info_file)) if 'k-point offset' in info_file[x]][0]
     vkloff = np.asarray([np.float(x) for x in info_file[kgrid_offset_index].split()[-3:]])
 
-    ################################################################################
+    ############################################################################
     #                   Reading kpoints, Energies from EIGVAL.OUT
-    ################################################################################
+    ############################################################################
 
 
     with open(input_energy, 'r') as f:
@@ -115,10 +115,19 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
         klist3d[idx,idy,idz] = i
 
 
-    ################################################################################
+    ############################################################################
     ### for hdf5 file name
-    name_index = [x for x in range(len(info_file)) if 'name' in info_file[x]][0]
-    material_name = info_file[name_index].split()[-1]
+
+    name_index = [x for x in range(len(info_file)) if 'name' in info_file[x]][:]
+    materialname = ["" for x in range(len(name_index))]
+    for i in range(len(name_index)):
+        material_name = info_file[name_index[i]-2].split()[-1]
+        materialname[i] = material_name[1:-1]
+    material_name = ''.join(materialname)
+
+    band_gap_index = [x for x in range(len(info_file)) if 'direct band gap' in info_file[x]][-1]
+    Eg =np.round(np.float64(info_file[band_gap_index].split()[-1])*27.21,2)
+
     exc_index = [x for x in range(len(info_file)) if 'Exchange-correlation' in info_file[x]][0]
     exc = [int(x) for x in (info_file[exc_index].split()[-3:])]
 
@@ -129,13 +138,13 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     else:
         exc = ''
 
-    Name = material_name+'_'+exc+\
+    Name = material_name+'_'+exc+'_'+str(Eg)+'eV'+\
         '_'+str(int(size[1]))+'x'+str(int(size[1]))+'x'+str(int(size[2]))+\
         '_nb_'+str(int(nb))+'.hdf5'
 
-    ################################################################################
+    ############################################################################
     #                  Reading matrix elements for "PMAT.OUT"
-    ################################################################################
+    ############################################################################
     k_bytes    = 8 # number of bytes requbired to store a single component of 3D k_vector
     pmat_bytes = 8 # number of bytes required to store a real/imaginary part of a single momentum matrix element
     n_bytes    = 4 # number of bytes required to store total number of bands

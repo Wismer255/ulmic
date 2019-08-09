@@ -318,7 +318,7 @@ class FinalStateAnalyzer:
     def linear_response(self, omega_array, decoherence_rate=2.418884e-04,
             subtract_initial_state=False, no_Drude_response_from_full_bands=False,
             gap_threshold=1e-4, inverse_mass=None, adjust_decoherence=False):
-        """ Return the intraband electric-current response to vector potential.
+        """ Return the linear electric-current response to vector potential.
 
         The function uses an analytical formula for evaluating the linear response of an
         excited state. It returns a tensor that relates the induced electric-current
@@ -331,6 +331,8 @@ class FinalStateAnalyzer:
         ----------
         omega_array : an array of shape (nw,)
             An array of circular frequencies, at which the linear response must be evaluated.
+            It is highly recommended to obtain this array from the function called
+            "dominant_transition_frequencies".
         decoherence_rate : scalar
             The decay rate of the polarization induced by interband transitions.
         subtract_initial_state : bool
@@ -412,6 +414,108 @@ class FinalStateAnalyzer:
         sigma_Drude = self.Drude_response(no_Drude_response_from_full_bands, gap_threshold, inverse_mass)
         return sigma + sigma_Drude[np.newaxis, :, :]
 
+    
+    def dominant_transition_frequencies(self, omega_min, omega_max, average_omega_step,
+            minimal_omega_step=0.0, use_matrix_elements=True):
+        """ Return an array of circular frequencies that correspond to interband transitions.
+
+        In typical 3D simulations, the number of crystal momenta is rather limited. Evaluating
+        the linear absorption, one frequently observes gaps at frequencies that happen to
+        be remote from any of the interband transitions supported the chosen k-grid. These
+        gaps are numerical artifacts, and even though a large dephasing rate alleviates the
+        problem, a prohibitively large rate is often required to produce a good-looking plot
+        of absorption. At the same time, the functions "linear_response" and
+        "linear_susceptibility" return accurate results at frequencies that correspond
+        to dipole-allowed transitions between states that have different occupations.
+        This function returns a list of such "reliable" frequencies.
+
+        Parameters
+        ----------
+        omega_min, omega_max : (scalars) an interval of circular frequencies to
+            search for interband transitions; both frequencies must be positive;
+        average_omega_step : (scalar) while the number of frequencies returned by
+            this function may vary, it will try to keep the spacing between
+            consecutive frequencies close to the value of this parameter;
+        minimal_omega_step : (scalar) if positive, the value of this parameters puts a
+            a limit on the minimal difference between two consecutive frequencies in the
+            output array;
+        use_matrix_elements : (bool) if False, the function selects prominent transitions
+            based on occupation numbers, with a little chance that a dipole-forbidden
+            transition will be considered a prominent one; if True, the function also
+            takes matrix elements into account, which costs some extra time;
+
+        Returns
+        -------
+        omega_array : (nw,) a list of circular frequencies that correspond to most
+            prominent interband transitions; each of these frequencies will be between
+            omega_min and omega_max.
+        """
+        weight_drop_threshold1 = 0.1 # below band edge
+        weight_drop_threshold2 = 0.9 # above band edge
+        nk = self.medium.nk
+        nb = self.medium.nb
+        nv = self.medium.nv
+        # check the parameters
+        assert omega_min < omega_max
+        assert omega_min > 0
+        # find all transition frequencies from lower to upper states
+        omega_mn = np.zeros((nk, nb, nb))
+        for n in range(nb-1): # cycle over initial bands
+            omega_mn[:, n+1:, n] = self.medium.energy[:, n+1:] - self.medium.energy[:, n, np.newaxis]
+        # find all the transitions within the given range of frequencies and sort them
+        index_tuple = np.nonzero(np.logical_and(omega_mn >= omega_min, omega_mn <= omega_max))
+        k_indices, m_indices, n_indices = index_tuple
+        omega_mn = omega_mn[index_tuple]
+        order = np.argsort(omega_mn)
+        omega_mn = omega_mn[order]
+        k_indices = k_indices[order]
+        m_indices = m_indices[order]
+        n_indices = n_indices[order]
+        del index_tuple, order
+        # evaluate $Y_{mn}(k) = |f_m(k) - f_n(k)|$
+        occupation_differences = self.rho_diagonal[(k_indices, m_indices)] - self.rho_diagonal[(k_indices, n_indices)]
+        weights = np.abs(occupation_differences)
+        # if necessary, multiply $Y_{mn}(k)$ with $\sum_\alpha |p_{mn}^\alpha|^2$
+        if use_matrix_elements:
+            p_weights = np.zeros(len(omega_mn))
+            for j in range(3): # loop over Cartesian indices
+                Z = self.medium.momentum[(k_indices, m_indices, n_indices, np.full(len(omega_mn), j, dtype=np.int))]
+                p_weights += np.real(Z * Z.conj())
+            weights *= p_weights
+        # search for prominent frequencies
+        omega_list = []
+        E_g = np.min(self.medium.energy[:, nv] - self.medium.energy[:, nv-1])
+        omega2 = omega_min
+        i2 = 0
+        weight = -1.0
+        while omega2 < omega_max:
+            omega1 = omega2
+            i1 = i2
+            previous_weight = weight
+            omega2 = min(omega_max, omega1 + average_omega_step)
+            i2 = np.searchsorted(omega_mn, omega2)
+            if i2 > i1:
+                q = i1 + np.argmax(weights[i1:i2+1]) # the index of the most prominent transition frequency
+                resonant_frequency = omega_mn[q]
+                weight = weights[q]
+                if omega1 < E_g:
+                    weight_drop_threshold = weight_drop_threshold1
+                else:
+                    weight_drop_threshold = weight_drop_threshold2
+                if weight < weight_drop_threshold * previous_weight:
+                    weight = previous_weight
+                    continue
+                if len(omega_list) == 0 or resonant_frequency - omega_list[-1] >= minimal_omega_step:
+                    omega_list.append(resonant_frequency)
+                else:
+                    if weight > previous_weight:
+                        omega_list[-1] = resonant_frequency
+                    else:
+                        weight = previous_weight
+        # return the result
+        return np.array(omega_list)
+
+
     def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False,
             gap_threshold=1e-4, inverse_mass=None):
         """ Return the tensor of the Drude susceptibility.
@@ -457,6 +561,8 @@ class FinalStateAnalyzer:
         omega_array : an array of shape (nw,)
             An array of circular frequencies, at which the linear response must be evaluated.
             None of the frequencies may be equal to zero, but negative frequencies are allowed.
+            It is highly recommended to obtain this array from the function called
+            "dominant_transition_frequencies".
         subtract_initial_state : bool
             If True, the function returns the difference between the response of the final
             state and that of the ground state.

@@ -2,11 +2,11 @@ import numpy as np
 import logging
 from ulmic.medium.manipulator import MediumManipulator
 
-try:
-    from mpi4py import MPI
-    MPI4PY_INSTALLED = True
-except:
-    MPI4PY_INSTALLED = False
+# try:
+#     from mpi4py import MPI
+#     MPI4PY_INSTALLED = True
+# except:
+#     MPI4PY_INSTALLED = False
 
 TOLERANCE_DEGENERACY = 1e-3
 

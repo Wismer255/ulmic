@@ -22,7 +22,7 @@ if __name__ == "__main__":
     if 'init' in sys.argv:
         variables = ['ULMIC_HOME','ULMIC_DATA','ULMIC_TEST','ULMIC_LOG']
         for variable in variables:
-            print("The variable {} is current set to:".format(variable))
+            print("The variable {} is currently set to:".format(variable))
             try:
                 print("  " + os.environ[variable])
             except:

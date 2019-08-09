@@ -1,10 +1,15 @@
 import numpy as np
 from scipy.interpolate import interpolate
 import matplotlib.pyplot as plt
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-comm_rank = comm.Get_rank()
-comm_size = comm.Get_size()
+
+try:
+    from mpi4py import MPI
+    MPI4PY_INSTALLED = True
+    comm = MPI.COMM_WORLD
+    comm_rank = comm.Get_rank()
+    comm_size = comm.Get_size()
+except:
+    MPI4PY_INSTALLED = False
 
 ZERO = 1e-16
 
@@ -98,7 +103,7 @@ class Result:
         """ Keep function for backwards compatibility. """
         if format is 'hdf5':
             import h5py
-            if comm_size > 1:
+            if MPI4PY_INSTALLED and comm_size > 1:
                 file_output = file_output.replace('.hdf5','.p{:d}.hdf5'.format(comm_rank))
 
             hdf5 = h5py.File(file_output, 'w')

@@ -4,11 +4,11 @@ import h5py
 from ulmic.atomic_units import AtomicUnits
 import logging
 from ulmic.environment import UlmicEnvironment as ue
-try:
-    from mpi4py import MPI
-    MPI4PY_INSTALLED = True
-except:
-    MPI4PY_INSTALLED = False
+# try:
+#     from mpi4py import MPI
+#     MPI4PY_INSTALLED = True
+# except:
+#     MPI4PY_INSTALLED = False
 
 
 class LoadHdf5:

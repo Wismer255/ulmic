@@ -1,5 +1,4 @@
 from ulmic.environment import UlmicEnvironment
-from mpi4py import MPI
 import numpy as np
 
 class ParallelManager:
@@ -9,6 +8,7 @@ class ParallelManager:
 
         self.n_threads = UlmicEnvironment.get_threads()
         try:
+            from mpi4py import MPI
             self.comm = MPI.COMM_WORLD
             self.rank = self.comm.Get_rank()
             self.size = self.comm.Get_size()

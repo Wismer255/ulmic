@@ -37,9 +37,9 @@ class SolverManager:
         elif type(self.options['time_step']) == float:
             self.default_dt = self.options['time_step']
             self.division_counter = 0
-            assert(self.default_dt > 0.0)
         else:
             raise ValueError("time_step must be either 'auto' or a floating-point number")
+        assert(self.default_dt > 0.0)
 
     def set_flags(self,*args):
         """ Pass flags (strings) or a list of flags (list of strings)"""

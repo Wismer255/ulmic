@@ -1,6 +1,7 @@
 import numpy as np
 from ulmic.atomic_units import AtomicUnits
 from ulmic.ulmi.jit.linear_response import jit_linear_interband_response
+from ulmic.external.hdf5interface import Hdf5Interface
 # from ulmic.result import Result
 # from ulmic.medium import Medium
 
@@ -14,6 +15,7 @@ class FinalStateAnalyzer:
 
     def __init__(self, medium, result, copy_wavefunctions=False):
         self.medium = medium
+        self.neighbour_table = None
         if copy_wavefunctions:
             self.psi = result.final_state.copy()
         else:
@@ -415,8 +417,8 @@ class FinalStateAnalyzer:
         return sigma + sigma_Drude[np.newaxis, :, :]
 
     
-    def dominant_transition_frequencies(self, omega_min, omega_max, average_omega_step,
-            minimal_omega_step=0.0, use_matrix_elements=True):
+    def dominant_transition_frequencies(self, omega_min, omega_max, threshold=0.8,
+        Cartesian_index=None):
         """ Return an array of circular frequencies that correspond to interband transitions.
 
         In typical 3D simulations, the number of crystal momenta is rather limited. Evaluating
@@ -433,16 +435,13 @@ class FinalStateAnalyzer:
         ----------
         omega_min, omega_max : (scalars) an interval of circular frequencies to
             search for interband transitions; both frequencies must be positive;
-        average_omega_step : (scalar) while the number of frequencies returned by
-            this function may vary, it will try to keep the spacing between
-            consecutive frequencies close to the value of this parameter;
-        minimal_omega_step : (scalar) if positive, the value of this parameters puts a
-            a limit on the minimal difference between two consecutive frequencies in the
-            output array;
-        use_matrix_elements : (bool) if False, the function selects prominent transitions
-            based on occupation numbers, with a little chance that a dipole-forbidden
-            transition will be considered a prominent one; if True, the function also
-            takes matrix elements into account, which costs some extra time;
+        threshold: (scalar) the value of this parameter should not exceed 1; the
+            larger it is, the more aggressively the function eliminates transitions
+            that it doesn't "trust";
+        Cartesian_index: (integer scalar or None) if None, then the absorption is
+            estimated from the sum over all the Cartesian components; otherwise,
+            a single component is used, and the value of this parameter must be an
+            integer number between 0 (x-axis) and 2 (z-axis).
 
         Returns
         -------
@@ -450,20 +449,25 @@ class FinalStateAnalyzer:
             prominent interband transitions; each of these frequencies will be between
             omega_min and omega_max.
         """
-        weight_drop_threshold1 = 0.1 # below band edge
-        weight_drop_threshold2 = 0.9 # above band edge
+        decoherence_rate = 0.0001 # it doesn't have to be the same rate as that
+                                  # used to evaluate the linear response
         nk = self.medium.nk
         nb = self.medium.nb
         nv = self.medium.nv
         # check the parameters
         assert omega_min < omega_max
         assert omega_min > 0
+        # if necessary, cacluate the table of nearest neighbours
+        if self.neighbour_table is None:
+            self.neighbour_table = Hdf5Interface.nearest_neighbour_table(self.medium.klist3d, 1)
         # find all transition frequencies from lower to upper states
         omega_mn = np.zeros((nk, nb, nb))
         for n in range(nb-1): # cycle over initial bands
             omega_mn[:, n+1:, n] = self.medium.energy[:, n+1:] - self.medium.energy[:, n, np.newaxis]
         # find all the transitions within the given range of frequencies and sort them
-        index_tuple = np.nonzero(np.logical_and(omega_mn >= omega_min, omega_mn <= omega_max))
+        # (use a slightly broader frequency range to hande decoherence)
+        index_tuple = np.nonzero(np.logical_and(omega_mn >= omega_min - 2*decoherence_rate,
+            omega_mn <= omega_max + 2*decoherence_rate))
         k_indices, m_indices, n_indices = index_tuple
         omega_mn = omega_mn[index_tuple]
         order = np.argsort(omega_mn)
@@ -472,48 +476,133 @@ class FinalStateAnalyzer:
         m_indices = m_indices[order]
         n_indices = n_indices[order]
         del index_tuple, order
-        # evaluate $Y_{mn}(k) = |f_m(k) - f_n(k)|$
-        occupation_differences = self.rho_diagonal[(k_indices, m_indices)] - self.rho_diagonal[(k_indices, n_indices)]
-        weights = np.abs(occupation_differences)
-        # if necessary, multiply $Y_{mn}(k)$ with $\sum_\alpha |p_{mn}^\alpha|^2$
-        if use_matrix_elements:
+        # for each of the identified transitions, calculate
+        # $ |f_m(k) - f_n(k)| / \omega_{m n}^2 \alpha |p_{mn}^\alpha|^2$
+        # which is the omega-independent part of the expression for Im[\chi_{\alpha \alpha}];
+        # if necessary, sum over the Cartesian components ($\alpha$)
+        occupation_differences = self.rho_diagonal[(k_indices, m_indices)] - \
+            self.rho_diagonal[(k_indices, n_indices)] # f_m(k) - f_n(k)
+        weights = np.abs(occupation_differences) / omega_mn**2
+        if Cartesian_index is None:
             p_weights = np.zeros(len(omega_mn))
             for j in range(3): # loop over Cartesian indices
-                Z = self.medium.momentum[(k_indices, m_indices, n_indices, np.full(len(omega_mn), j, dtype=np.int))]
+                Z = self.medium.momentum[(k_indices, m_indices, n_indices,
+                    np.full(len(omega_mn), j, dtype=np.int))]
                 p_weights += np.real(Z * Z.conj())
             weights *= p_weights
-        # search for prominent frequencies
-        omega_list = []
-        E_g = np.min(self.medium.energy[:, nv] - self.medium.energy[:, nv-1])
-        omega2 = omega_min
-        i2 = 0
-        weight = -1.0
-        while omega2 < omega_max:
-            omega1 = omega2
-            i1 = i2
-            previous_weight = weight
-            omega2 = min(omega_max, omega1 + average_omega_step)
-            i2 = np.searchsorted(omega_mn, omega2)
-            if i2 > i1:
-                q = i1 + np.argmax(weights[i1:i2+1]) # the index of the most prominent transition frequency
-                resonant_frequency = omega_mn[q]
-                weight = weights[q]
-                if omega1 < E_g:
-                    weight_drop_threshold = weight_drop_threshold1
-                else:
-                    weight_drop_threshold = weight_drop_threshold2
-                if weight < weight_drop_threshold * previous_weight:
-                    weight = previous_weight
-                    continue
-                if len(omega_list) == 0 or resonant_frequency - omega_list[-1] >= minimal_omega_step:
-                    omega_list.append(resonant_frequency)
-                else:
-                    if weight > previous_weight:
-                        omega_list[-1] = resonant_frequency
-                    else:
-                        weight = previous_weight
-        # return the result
-        return np.array(omega_list)
+        else:
+            Z = self.medium.momentum[(k_indices, m_indices, n_indices,
+                    np.full(len(omega_mn), Cartesian_index, dtype=np.int))]
+            weights *= np.real(Z * Z.conj())
+        # eliminate transitions that are supposed to give negligible contributions
+        selection = (weights >= 1e-3 * np.max(weights))
+        weights = weights[selection]
+        omega_mn = omega_mn[selection]
+        k_indices = k_indices[selection]
+        m_indices = m_indices[selection]
+        n_indices = n_indices[selection]
+        ## # BEGIN DEBUGGING
+        ## import sys
+        ## flat_klist3d = self.medium.klist3d.flatten()
+        ## f = open("weights.dat", 'w')
+        ## for i in range(len(weights)):
+        ##     indices = np.nonzero(flat_klist3d == k_indices[i])[0]
+        ##     if len(indices) == 0:
+        ##         print("ERROR: len(indices) == 0")
+        ##         sys.exit(1)
+        ##     if len(indices) > 1:
+        ##         print("ERROR: len(indices) > 1")
+        ##         sys.exit(1)
+        ##     ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
+        ##     f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
+        ##         omega_mn[i]*27.21, weights[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
+        ## f.close()
+        ## # END DEBUGGING
+        # roughly estimate the absorption (amplification) at those transition frequencies
+        # that lie in the [omega_min, omega_max] range (omitting constant prefactors)
+        abs_Im_chi = np.zeros_like(weights)
+        for transition_index in range(len(omega_mn)):
+            omega = omega_mn[transition_index]
+            if omega >= omega_min and omega <= omega_max:
+                # identify transitions that may contribute
+                i1 = np.searchsorted(omega_mn, omega - 2*decoherence_rate)
+                i2 = np.searchsorted(omega_mn, omega + 2*decoherence_rate)
+                # add the contributions
+                abs_Im_chi[transition_index] = np.sum(weights[i1:i2] /
+                        ((omega - omega_mn[i1:i2])**2 + decoherence_rate**2))
+        ## # BEGIN DEBUGGING
+        ## flat_klist3d = self.medium.klist3d.flatten()
+        ## f = open("abs_Im_chi_before.dat", 'w')
+        ## for i in range(len(weights)):
+        ##     indices = np.nonzero(flat_klist3d == k_indices[i])[0]
+        ##     if len(indices) == 0:
+        ##         print("ERROR: len(indices) == 0")
+        ##         sys.exit(1)
+        ##     if len(indices) > 1:
+        ##         print("ERROR: len(indices) > 1")
+        ##         sys.exit(1)
+        ##     ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
+        ##     f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
+        ##         omega_mn[i]*27.21, abs_Im_chi[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
+        ## f.close()
+        ## # END DEBUGGING
+        # "weed out" transition frequencies that are too unimportant or too unreliable
+        selection = np.full(len(omega_mn), True, dtype=np.bool)
+        selection[omega_mn < omega_min] = False
+        selection[omega_mn > omega_max] = False
+        # step 1: get rid of very close frequencies
+        d_omega = omega_mn[1:] - omega_mn[:-1]
+        for i in np.nonzero(d_omega < decoherence_rate)[0]:
+            if abs_Im_chi[i] > abs_Im_chi[i+1]:
+                selection[i+1] = False
+            else:
+                selection[i] = False
+        # step 2: consider transitions at neighboring crystal momenta,
+        # starting from the most prominent transitions
+        for transition_index in np.argsort(abs_Im_chi)[::-1]:
+            if not selection[transition_index]:
+                continue
+            omega0 = omega_mn[transition_index]
+            ik_central = k_indices[transition_index]
+            for ik in self.neighbour_table[ik_central, :, :].flatten():
+                # of all the transitions at this crystal momentum,
+                # find the one closest in frequency to omega
+                indices = np.nonzero(k_indices == ik)[0]
+                if len(indices) == 0: continue
+                j = indices[np.argmin(np.abs(omega0 - omega_mn[indices]))]
+                if not selection[j]: continue
+                # examine transitions in the frequency range between omega0 and omega_mn[j]
+                min_tolerable_abs_Im_chi = threshold * min(abs_Im_chi[transition_index],
+                    abs_Im_chi[j])
+                j_min = 1 + min(transition_index, j)
+                j_max = max(transition_index, j)
+                indices = np.nonzero(abs_Im_chi[j_min:j_max] < min_tolerable_abs_Im_chi)[0]
+                if len(indices) > 0:
+                    selection[indices+j_min] = False
+        omega_mn = omega_mn[selection]
+        ## abs_Im_chi = abs_Im_chi[selection]
+        ## weights = weights[selection]
+        ## k_indices = k_indices[selection]
+        ## m_indices = m_indices[selection]
+        ## n_indices = n_indices[selection]
+        ## # BEGIN DEBUGGING
+        ## flat_klist3d = self.medium.klist3d.flatten()
+        ## f = open("abs_Im_chi_after.dat", 'w')
+        ## for i in range(len(weights)):
+        ##     indices = np.nonzero(flat_klist3d == k_indices[i])[0]
+        ##     if len(indices) == 0:
+        ##         print("ERROR: len(indices) == 0")
+        ##         sys.exit(1)
+        ##     if len(indices) > 1:
+        ##         print("ERROR: len(indices) > 1")
+        ##         sys.exit(1)
+        ##     ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
+        ##     f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
+        ##         omega_mn[i]*27.21, abs_Im_chi[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
+        ## f.close()
+        ## sys.exit(0)
+        ## # END DEBUGGING
+        return omega_mn
 
 
     def Drude_susceptibility(self, omega_array, no_Drude_response_from_full_bands=False,

@@ -416,7 +416,7 @@ class FinalStateAnalyzer:
         sigma_Drude = self.Drude_response(no_Drude_response_from_full_bands, gap_threshold, inverse_mass)
         return sigma + sigma_Drude[np.newaxis, :, :]
 
-    
+
     def dominant_transition_frequencies(self, omega_min, omega_max, threshold=0.8,
         Cartesian_index=None):
         """ Return an array of circular frequencies that correspond to interband transitions.
@@ -466,8 +466,9 @@ class FinalStateAnalyzer:
             omega_mn[:, n+1:, n] = self.medium.energy[:, n+1:] - self.medium.energy[:, n, np.newaxis]
         # find all the transitions within the given range of frequencies and sort them
         # (use a slightly broader frequency range to hande decoherence)
-        index_tuple = np.nonzero(np.logical_and(omega_mn >= omega_min - 2*decoherence_rate,
-            omega_mn <= omega_max + 2*decoherence_rate))
+        index_tuple = np.nonzero(np.logical_and(omega_mn > 0,
+            np.logical_and(omega_mn >= omega_min - 2*decoherence_rate,
+            omega_mn <= omega_max + 2*decoherence_rate)))
         k_indices, m_indices, n_indices = index_tuple
         omega_mn = omega_mn[index_tuple]
         order = np.argsort(omega_mn)
@@ -495,7 +496,8 @@ class FinalStateAnalyzer:
                     np.full(len(omega_mn), Cartesian_index, dtype=np.int))]
             weights *= np.real(Z * Z.conj())
         # eliminate transitions that are supposed to give negligible contributions
-        selection = (weights >= 1e-3 * np.max(weights))
+        Y = weights * omega_mn**2
+        selection = (Y >= 1e-3 * np.max(Y))
         weights = weights[selection]
         omega_mn = omega_mn[selection]
         k_indices = k_indices[selection]
@@ -531,6 +533,7 @@ class FinalStateAnalyzer:
                 abs_Im_chi[transition_index] = np.sum(weights[i1:i2] /
                         ((omega - omega_mn[i1:i2])**2 + decoherence_rate**2))
         ## # BEGIN DEBUGGING
+        ## print(len(weights))
         ## flat_klist3d = self.medium.klist3d.flatten()
         ## f = open("abs_Im_chi_before.dat", 'w')
         ## for i in range(len(weights)):
@@ -580,12 +583,12 @@ class FinalStateAnalyzer:
                 if len(indices) > 0:
                     selection[indices+j_min] = False
         omega_mn = omega_mn[selection]
+        ## # BEGIN DEBUGGING
         ## abs_Im_chi = abs_Im_chi[selection]
         ## weights = weights[selection]
         ## k_indices = k_indices[selection]
         ## m_indices = m_indices[selection]
         ## n_indices = n_indices[selection]
-        ## # BEGIN DEBUGGING
         ## flat_klist3d = self.medium.klist3d.flatten()
         ## f = open("abs_Im_chi_after.dat", 'w')
         ## for i in range(len(weights)):

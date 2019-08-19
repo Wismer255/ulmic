@@ -417,8 +417,8 @@ class FinalStateAnalyzer:
         return sigma + sigma_Drude[np.newaxis, :, :]
 
 
-    def dominant_transition_frequencies(self, omega_min, omega_max, threshold=0.8,
-        Cartesian_index=None, decoherence_rate=0.001):
+    def dominant_transition_frequencies(self, omega_min, omega_max, threshold=0.9,
+        Cartesian_index=None, decoherence_rate=0.0004):
         """ Return an array of circular frequencies that correspond to interband transitions.
 
         In typical 3D simulations, the number of crystal momenta is rather limited. Evaluating
@@ -550,13 +550,21 @@ class FinalStateAnalyzer:
         ## # END DEBUGGING
         # "weed out" transition frequencies that are too unimportant or too unreliable
         # step 1: get rid of very close frequencies
-        d_omega = omega_mn[1:] - omega_mn[:-1]
-        for i in np.nonzero(np.abs(d_omega) < decoherence_rate)[0]:
-            if selection[i] and selection[i+1]:
-                if abs_Im_chi[i] > abs_Im_chi[i+1]:
-                    selection[i+1] = False
-                else:
-                    selection[i] = False
+        while True:
+            selected_indices = np.nonzero(selection)[0]
+            selected_frequencies = omega_mn[selection]
+            d_omega = selected_frequencies[1:] - selected_frequencies[:-1]
+            indices = np.nonzero(np.abs(d_omega) < decoherence_rate)[0]
+            if len(indices) == 0:
+                break
+            for i in indices:
+                j1 = selected_indices[i]
+                j2 = selected_indices[i+1]
+                if selection[j1] and selection[j2]:
+                    if abs_Im_chi[j1] > abs_Im_chi[j2]:
+                        selection[j2] = False
+                    else:
+                        selection[j1] = False
         # step 2: consider transitions at neighboring crystal momenta,
         # starting from the most prominent transitions
         for transition_index in np.argsort(abs_Im_chi)[::-1]:

@@ -495,37 +495,35 @@ class FinalStateAnalyzer:
             Z = self.medium.momentum[(k_indices, m_indices, n_indices,
                     np.full(len(omega_mn), Cartesian_index, dtype=np.int))]
             weights *= np.real(Z * Z.conj())
-        # eliminate transitions that are supposed to give negligible contributions
+        # mark those transitions that are expected to give significant contributions
         Y = weights * omega_mn**2
         selection = (Y >= 1e-3 * np.max(Y))
-        weights = weights[selection]
-        omega_mn = omega_mn[selection]
-        k_indices = k_indices[selection]
-        m_indices = m_indices[selection]
-        n_indices = n_indices[selection]
         ## # BEGIN DEBUGGING
         ## import sys
         ## flat_klist3d = self.medium.klist3d.flatten()
         ## f = open("weights.dat", 'w')
         ## for i in range(len(weights)):
-        ##     indices = np.nonzero(flat_klist3d == k_indices[i])[0]
-        ##     if len(indices) == 0:
-        ##         print("ERROR: len(indices) == 0")
-        ##         sys.exit(1)
-        ##     if len(indices) > 1:
-        ##         print("ERROR: len(indices) > 1")
-        ##         sys.exit(1)
-        ##     ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
-        ##     f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
-        ##         omega_mn[i]*27.21, weights[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
+        ##     if selection[i]:
+        ##         indices = np.nonzero(flat_klist3d == k_indices[i])[0]
+        ##         if len(indices) == 0:
+        ##             print("ERROR: len(indices) == 0")
+        ##             sys.exit(1)
+        ##         if len(indices) > 1:
+        ##             print("ERROR: len(indices) > 1")
+        ##             sys.exit(1)
+        ##         ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
+        ##         f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
+        ##             omega_mn[i]*27.21, weights[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
         ## f.close()
         ## # END DEBUGGING
         # roughly estimate the absorption (amplification) at those transition frequencies
         # that lie in the [omega_min, omega_max] range (omitting constant prefactors)
+        selection[omega_mn < omega_min] = False
+        selection[omega_mn > omega_max] = False
         abs_Im_chi = np.zeros_like(weights)
         for transition_index in range(len(omega_mn)):
-            omega = omega_mn[transition_index]
-            if omega >= omega_min and omega <= omega_max:
+            if selection[transition_index]:
+                omega = omega_mn[transition_index]
                 # identify transitions that may contribute
                 i1 = np.searchsorted(omega_mn, omega - 2*decoherence_rate)
                 i2 = np.searchsorted(omega_mn, omega + 2*decoherence_rate)
@@ -537,25 +535,23 @@ class FinalStateAnalyzer:
         ## flat_klist3d = self.medium.klist3d.flatten()
         ## f = open("abs_Im_chi_before.dat", 'w')
         ## for i in range(len(weights)):
-        ##     indices = np.nonzero(flat_klist3d == k_indices[i])[0]
-        ##     if len(indices) == 0:
-        ##         print("ERROR: len(indices) == 0")
-        ##         sys.exit(1)
-        ##     if len(indices) > 1:
-        ##         print("ERROR: len(indices) > 1")
-        ##         sys.exit(1)
-        ##     ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
-        ##     f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
-        ##         omega_mn[i]*27.21, abs_Im_chi[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
+        ##     if selection[j]:
+        ##         indices = np.nonzero(flat_klist3d == k_indices[i])[0]
+        ##         if len(indices) == 0:
+        ##             print("ERROR: len(indices) == 0")
+        ##             sys.exit(1)
+        ##         if len(indices) > 1:
+        ##             print("ERROR: len(indices) > 1")
+        ##             sys.exit(1)
+        ##         ik1, ik2, ik3 = np.unravel_index(indices[0], self.medium.klist3d.shape)
+        ##         f.write("{:8.5f} {:9.3e} {:3d} {:3d} {:2d} {:2d} {:2d}\n".format(
+        ##             omega_mn[i]*27.21, abs_Im_chi[i], m_indices[i], n_indices[i], ik1, ik2, ik3))
         ## f.close()
         ## # END DEBUGGING
         # "weed out" transition frequencies that are too unimportant or too unreliable
-        selection = np.full(len(omega_mn), True, dtype=np.bool)
-        selection[omega_mn < omega_min] = False
-        selection[omega_mn > omega_max] = False
         # step 1: get rid of very close frequencies
         d_omega = omega_mn[1:] - omega_mn[:-1]
-        for i in np.nonzero(d_omega < decoherence_rate)[0]:
+        for i in np.nonzero(np.abs(d_omega) < decoherence_rate)[0]:
             if abs_Im_chi[i] > abs_Im_chi[i+1]:
                 selection[i+1] = False
             else:

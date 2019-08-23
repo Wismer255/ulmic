@@ -2,6 +2,7 @@ import numpy as np
 import logging
 from ulmic.external import nearest_neighbor_table
 from ulmic.medium.loadhdf5 import LoadHdf5
+import gc
 # try:
 #     from mpi4py import MPI
 #     MPI4PY_INSTALLED = True
@@ -69,7 +70,7 @@ class MediumManipulator(LoadHdf5):
                     self.overlap[i,j,k,:,:] = np.dot(U,Vh)
 
     def set_min_band_index(self, nb_min):
-        """Discard bands below nb_min"""
+        """ Discard bands below nb_min """
         self.nb -= nb_min
         self.nv -= nb_min
         if hasattr(self,'energy'):
@@ -78,9 +79,11 @@ class MediumManipulator(LoadHdf5):
             self.momentum = self.momentum[:,nb_min:,nb_min:,:]
         if hasattr(self,'overlap'):
             self.overlap = self.overlap[:,:,:,nb_min:,nb_min:]
+        # free the memory
+        gc.collect()
 
     def set_max_band_index(self,nb_max):
-        """Discard bands above nb_max (including nb_max)"""
+        """ Discard bands above nb_max (including nb_max) """
         self.nb = min(nb_max,self.nb)
         if hasattr(self,'energy'):
             self.energy = self.energy[:,:nb_max]
@@ -88,6 +91,8 @@ class MediumManipulator(LoadHdf5):
             self.momentum = self.momentum[:,:nb_max,:nb_max,:]
         if hasattr(self, 'overlap'):
             self.overlap = self.overlap[:,:,:,:nb_max,:nb_max]
+        # free the memory
+        gc.collect()
 
     def get_direct_band_gap(self, ):
         """ Calculate direct band gap. """

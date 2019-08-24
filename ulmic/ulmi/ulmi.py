@@ -1,7 +1,7 @@
 import datetime
 from ulmic.ulmi.observables_manager import ObservablesManager
 from ulmic.ulmi.solver_manager import SolverManager
-# from ulmic.ulmi.parallel_manager import ParallelManager
+from ulmic.ulmi.parallel_manager import ParallelManager
 from ulmic.ulmi.result_manager import ResultManager
 from ulmic.ulmi.state_manager import StateManager
 from ulmic.logs import Logs
@@ -28,7 +28,7 @@ class UltrafastLightMatterInteraction:
 
         # Define managers
         self.solver_manager = SolverManager(time,pulses)
-        self.parallel_manager = None # ParallelManager(medium)
+        self.parallel_manager = ParallelManager(medium)
         self.state_manager = StateManager(medium,pulses)
         self.observables_manager = ObservablesManager(medium,pulses)
         self.result_manager = ResultManager(medium)

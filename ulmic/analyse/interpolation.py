@@ -108,7 +108,7 @@ class ReciprocalSpaceInterpolator:
                 N = np.prod(np.array(self.extra_dimensions))
                 result_linear = np.zeros((N_k, N), dtype=self.data.dtype)
             X = (np.arange(N1+1), np.arange(N2+1), np.arange(N3+1))
-            Y = np.zeros((N1+1, N2+1, N3+1, N))
+            Y = np.zeros((N1+1, N2+1, N3+1, N), dtype=self.data.dtype)
             Y[:N1, :N2, :N3, :] = self.data.reshape((N1, N2, N3, N), order='C')
             # ensure periodicity
             Y[N1, :, :, :] = Y[0, :, :, :]

@@ -147,6 +147,48 @@ class ReciprocalSpaceInterpolator:
         return result.astype(self.data.dtype)
 
 
+    def nearest_neighbor_Cartesian3D(self, crystal_momenta):
+        """ Return values at k-grid nodes closest to the given crystal momenta
+
+        This function returns nearest-neighbor values at crystal momenta
+        specified by their 3D Cartesian coordinates.
+
+        Parameters
+        ----------
+        crystal_momenta : (N_k, 3) the Cartesian coordinates of N_k crystal momenta.
+
+        Returns
+        -------
+        An array of nearest-neighbor values; the first dimension of this 
+        array has a length of N, while the other dimensions, if present,
+        match those of the array passed to the "reset" method.
+        """
+        N_k = len(crystal_momenta)
+        N1 = self.klist3d.shape[0]
+        N2 = self.klist3d.shape[1]
+        N3 = self.klist3d.shape[2]
+        xi1 = np.sum(crystal_momenta * self.lattice_vectors[:, 0].reshape((1, 3)), axis=-1)
+        xi2 = np.sum(crystal_momenta * self.lattice_vectors[:, 1].reshape((1, 3)), axis=-1)
+        xi3 = np.sum(crystal_momenta * self.lattice_vectors[:, 2].reshape((1, 3)), axis=-1)
+        i1_array = int(np.round(xi1 * N1 / (2 * np.pi)))
+        i2_array = int(np.round(xi2 * N2 / (2 * np.pi)))
+        i3_array = int(np.round(xi3 * N3 / (2 * np.pi)))
+        i1_array -= N1 * np.floor(i1_array / (N1 + 0.)) # python2-safe
+        i2_array -= N2 * np.floor(i2_array / (N2 + 0.)) # python2-safe
+        i3_array -= N3 * np.floor(i3_array / (N3 + 0.)) # python2-safe
+        if len(self.extra_dimensions) == 0:
+            result = np.zeros((N_k, 1), dtype=self.data.dtype)
+            N = 1
+        else:
+            N = np.prod(np.array(self.extra_dimensions))
+            result = np.zeros((N_k, N), dtype=self.data.dtype)
+        Y = self.data.reshape((N1, N2, N3, N), order='C')
+        for n in range(N):
+            result[:, n] = Y[i1_array, i2_array, i3_array, n]
+        result = result.reshape((N_k,) + self.extra_dimensions, order='C')
+        return result
+
+
     def interpolate_reduced2D(self, xi1, xi2, projection_axis=2, Fourier_weight=0.9):
         r""" Return interpolated projected data.
 

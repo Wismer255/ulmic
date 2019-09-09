@@ -2,14 +2,15 @@ import numpy as np
 from scipy.interpolate import interpolate
 import matplotlib.pyplot as plt
 
-try:
-    from mpi4py import MPI
-    MPI4PY_INSTALLED = True
-    comm = MPI.COMM_WORLD
-    comm_rank = comm.Get_rank()
-    comm_size = comm.Get_size()
-except:
-    MPI4PY_INSTALLED = False
+MPI4PY_INSTALLED = False
+# try:
+#     from mpi4py import MPI
+#     MPI4PY_INSTALLED = True
+#     comm = MPI.COMM_WORLD
+#     comm_rank = comm.Get_rank()
+#     comm_size = comm.Get_size()
+# except:
+#     MPI4PY_INSTALLED = False
 
 ZERO = 1e-16
 

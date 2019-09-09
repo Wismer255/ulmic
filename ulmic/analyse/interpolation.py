@@ -61,7 +61,7 @@ class ReciprocalSpaceInterpolator:
 
         Returns
         -------
-        An array of interpolated values; the first dimension of this 
+        An array of interpolated values; the first dimension of this
         array has a length of N, while the other dimensions, if present,
         match those of the array passed to the "reset" method.
         """
@@ -108,7 +108,7 @@ class ReciprocalSpaceInterpolator:
                 N = np.prod(np.array(self.extra_dimensions))
                 result_linear = np.zeros((N_k, N), dtype=self.data.dtype)
             X = (np.arange(N1+1), np.arange(N2+1), np.arange(N3+1))
-            Y = np.zeros((N1+1, N2+1, N3+1, N))
+            Y = np.zeros((N1+1, N2+1, N3+1, N), dtype=self.data.dtype)
             Y[:N1, :N2, :N3, :] = self.data.reshape((N1, N2, N3, N), order='C')
             # ensure periodicity
             Y[N1, :, :, :] = Y[0, :, :, :]
@@ -188,7 +188,7 @@ class ReciprocalSpaceInterpolator:
         assert(projection_axis in {0, 1, 2})
         assert(Fourier_weight >= 0.0)
         assert(Fourier_weight <= 1.0)
-        # project along the selected axis        
+        # project along the selected axis
         data = np.mean(self.data, axis=projection_axis)
         N1 = data.shape[0]
         N2 = data.shape[1]

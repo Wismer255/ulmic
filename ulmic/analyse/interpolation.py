@@ -159,7 +159,7 @@ class ReciprocalSpaceInterpolator:
 
         Returns
         -------
-        An array of nearest-neighbor values; the first dimension of this 
+        An array of nearest-neighbor values; the first dimension of this
         array has a length of N, while the other dimensions, if present,
         match those of the array passed to the "reset" method.
         """
@@ -170,12 +170,15 @@ class ReciprocalSpaceInterpolator:
         xi1 = np.sum(crystal_momenta * self.lattice_vectors[:, 0].reshape((1, 3)), axis=-1)
         xi2 = np.sum(crystal_momenta * self.lattice_vectors[:, 1].reshape((1, 3)), axis=-1)
         xi3 = np.sum(crystal_momenta * self.lattice_vectors[:, 2].reshape((1, 3)), axis=-1)
-        i1_array = int(np.round(xi1 * N1 / (2 * np.pi)))
-        i2_array = int(np.round(xi2 * N2 / (2 * np.pi)))
-        i3_array = int(np.round(xi3 * N3 / (2 * np.pi)))
+        i1_array = np.round(xi1 * N1 / (2 * np.pi))
+        i2_array = np.round(xi2 * N2 / (2 * np.pi))
+        i3_array = np.round(xi3 * N3 / (2 * np.pi))
         i1_array -= N1 * np.floor(i1_array / (N1 + 0.)) # python2-safe
         i2_array -= N2 * np.floor(i2_array / (N2 + 0.)) # python2-safe
         i3_array -= N3 * np.floor(i3_array / (N3 + 0.)) # python2-safe
+        i1_array = i1_array.astype(np.intp)
+        i2_array = i2_array.astype(np.intp)
+        i3_array = i3_array.astype(np.intp)
         if len(self.extra_dimensions) == 0:
             result = np.zeros((N_k, 1), dtype=self.data.dtype)
             N = 1

@@ -442,8 +442,11 @@ class FinalStateAnalyzer:
             estimated from the sum over all the Cartesian components; otherwise,
             a single component is used, and the value of this parameter must be an
             integer number between 0 (x-axis) and 2 (z-axis);
-        decoherence_rate : (scalar) it doesn't have to be the same rate as that
-            used to evaluate the linear response, and it must be larger than zero.
+        decoherence_rate : (scalar) this assumed decoherence rate is used to roughly estimate
+            absorption, and it also controls how closely spaced the selected frequencies
+            may be (if the function returns too many frequencies, increase the value of this
+            parameters); this rate does not have to be the same as that used to evaluate
+            the linear response, and it must be larger than zero.
 
         Returns
         -------
@@ -465,7 +468,7 @@ class FinalStateAnalyzer:
         for n in range(nb-1): # cycle over initial bands
             omega_mn[:, n+1:, n] = self.medium.energy[:, n+1:] - self.medium.energy[:, n, np.newaxis]
         # find all the transitions within the given range of frequencies and sort them
-        # (use a slightly broader frequency range to hande decoherence)
+        # (use a slightly broader frequency range to handle decoherence)
         index_tuple = np.nonzero(np.logical_and(omega_mn > 0,
             np.logical_and(omega_mn >= omega_min - 2*decoherence_rate,
             omega_mn <= omega_max + 2*decoherence_rate)))

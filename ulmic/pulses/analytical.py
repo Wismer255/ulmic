@@ -66,6 +66,8 @@ class AnalyticalPulse:
             vector_potential += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'HCP':
             vector_potential += self.get_HCP_vector_potential(self.variables,t)
+        elif self.variables['envelope'] == '1cycle':
+            vector_potential += self.get_singe_cycle_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'slope':
             vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
@@ -82,6 +84,8 @@ class AnalyticalPulse:
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'HCP':
             electric_field += self.get_HCP_electric_field(self.variables,t)
+        elif self.variables['envelope'] == '1cycle':
+            electric_field += self.get_single_cycle_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'slope':
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
@@ -172,6 +176,27 @@ class AnalyticalPulse:
         t = time - delay
         H = np.heaviside(tau_l-np.abs(t), 0.0)
         return H * E0 * np.cos(np.pi*t / (2*tau_l))**4 * polarisation_vector
+
+    def get_single_cycle_vector_potential(self,pulse,time):
+        E0 =  pulse['E0']
+        # FWHM = pulse['FWHM']
+        omega = pulse['omega']
+        polarisation_vector = pulse['polarisation_vector'].real
+        delay = pulse['delay']
+        tau_l = np.pi / omega
+        t = time - delay
+        return H * E0 / omega * (1 + np.cos(omega*t)) * polarisation_vector
+
+    def get_single_cycle_electric_field(self,pulse,time):
+        E0 =  pulse['E0']
+        # FWHM = pulse['FWHM']
+        omega = pulse['omega']
+        polarisation_vector = pulse['polarisation_vector'].real
+        delay = pulse['delay']
+        tau_l = np.pi / omega
+        t = time - delay
+        H = np.heaviside(tau_l-np.abs(t), 0.0)
+        return H * E0 * np.sin(omega*t) * polarisation_vector
 
     def get_cos4_vector_potential(self,pulse,time):
         E0 =  pulse['E0']

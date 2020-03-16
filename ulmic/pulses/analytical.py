@@ -67,7 +67,7 @@ class AnalyticalPulse:
         elif self.variables['envelope'] == 'HCP':
             vector_potential += self.get_HCP_vector_potential(self.variables,t)
         elif self.variables['envelope'] == '1cycle':
-            vector_potential += self.get_singe_cycle_vector_potential(self.variables,t)
+            vector_potential += self.get_single_cycle_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'slope':
             vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
@@ -185,6 +185,7 @@ class AnalyticalPulse:
         delay = pulse['delay']
         tau_l = np.pi / omega
         t = time - delay
+        H = np.heaviside(tau_l-np.abs(t), 0.0)
         return H * E0 / omega * (1 + np.cos(omega*t)) * polarisation_vector
 
     def get_single_cycle_electric_field(self,pulse,time):

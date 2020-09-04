@@ -75,7 +75,7 @@ class Result:
         self.time_output = np.arange(time_old[0],time_old[-1],t_min)
 
         for attr, value in self.__dict__.items():
-            if attr is not 'time_output' and type(attr) is type(self.time_output):
+            if (attr != 'time_output') and (type(attr) is type(self.time_output)):
                 if value.shape[0] == len(time_old):
                     f = interpolate.interp1d(time_old, value,axis=0)
                     setattr(self, attr, f(self.time_output))
@@ -102,7 +102,7 @@ class Result:
 
     def save_data_to_file(self,file_output,format='hdf5'):
         """ Keep function for backwards compatibility. """
-        if format is 'hdf5':
+        if format == 'hdf5':
             import h5py
             if MPI4PY_INSTALLED and comm_size > 1:
                 file_output = file_output.replace('.hdf5','.p{:d}.hdf5'.format(comm_rank))
@@ -114,7 +114,7 @@ class Result:
 
     def load_data_from_file(self,file_output,format='hdf5'):
         """ Keep function for backwards compatibility. """
-        if format is 'hdf5':
+        if format == 'hdf5':
             import h5py
             hdf5 = h5py.File(file_output, 'r')
             for dset in hdf5:

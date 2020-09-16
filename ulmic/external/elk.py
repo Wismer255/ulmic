@@ -4,40 +4,13 @@ import h5py
 
 
 def create_elk_hdf5(path_to_elk_OUT, output_file_path):
-    """
-    path_to_elk_OUT:    string
-                        Path to the folder containing following elk output files:
-                        'INFO.OUT',
-                        'LATTICE.OUT',
-                        'KPOINTS.OUT',
-                        'EIGVAL.OUT'
-                        'PMAT.OUT'.
-    output_file_path:   string
-                        path where where hdf5 file will be created
-    return:        HDF5 file:>> "material_name_exc_*x*x*_nb_*.hdf5"  which contains:
-
-                        "nk":  number of kpoints
-                        "nb":  number of bands
-             "valence_bands":  number of valence bands
-                      "size":  kpoints grid size (nk_x, nk_y, nk_z)
-               "spin_factor":  number of electrons per energy state
-                   "klist1d":  kpoints (nk,3)
-                   "klist3d":  indices of klist1d (nk_x, nk_y, nk_z)
-           "lattice_vectors":  (3,3)
-                               lattice vector--> a_{n} = lattice_vectors[n-1,:],
-                                                                where n = 0,1,2
-        "reciprocal_vectors":  (3,3)
-                                reciprocal vector--> b_{n} = reciprocal_vectors[n-1,:],
-                                                                 where n = 0,1,2
-                    "energy":   energies of states (nk,nb)
-                  "momentum":   momentum matrix elements (nk,nb,nb,3)
-    """
-
     input_info     = os.path.join(path_to_elk_OUT,'INFO.OUT'   )
     input_lattice  = os.path.join(path_to_elk_OUT,'LATTICE.OUT')
     input_kpoints  = os.path.join(path_to_elk_OUT,'KPOINTS.OUT')
     input_energy   = os.path.join(path_to_elk_OUT,'EIGVAL.OUT' )
     input_momentum = os.path.join(path_to_elk_OUT,'PMAT.OUT'   )
+
+
     ############################################################################
     #          Reading lattice vectors and reciprocal lattice vectors
     ############################################################################
@@ -55,12 +28,8 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
         for j in range(3):
             lattice_vectors[i,j]    = np.float(lattice_file[avec_ind+i].split()[j])
             reciprocal_vectors[i,j] = np.float(lattice_file[bvec_ind+i].split()[j])
-    '''
-    cell_vol_ind = [x for x in range(len(lattice_file)) if 'Unit cell volume' in lattice_file[x]][0]
-    unit_cell_volume = np.float(lattice_file[cell_vol_ind].split()[-1])
-    BZ_vol_ind = [x for x in range(len(lattice_file)) if 'Brillouin zone volume' in lattice_file[x]][0]
-    Brillouin_zone_volume = np.float(lattice_file[BZ_vol_ind].split()[-1])
-    '''
+
+
     ############################################################################
     #              Reading kpoints grid size and grid shift from INFO.OUT
     ############################################################################
@@ -72,6 +41,7 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     size = np.asarray([np.int(x) for x in info_file[kgrid_index].split()[-3:]])
     kgrid_offset_index = [np.int(x) for x in range(len(info_file)) if 'k-point offset' in info_file[x]][0]
     vkloff = np.asarray([np.float(x) for x in info_file[kgrid_offset_index].split()[-3:]])
+
 
     ############################################################################
     #                   Reading kpoints, Energies from EIGVAL.OUT
@@ -116,6 +86,8 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
 
 
     ############################################################################
+
+
     ### for hdf5 file name
 
     name_index = [x for x in range(len(info_file)) if 'name' in info_file[x]][:]
@@ -142,24 +114,78 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
         '_'+str(int(size[1]))+'x'+str(int(size[1]))+'x'+str(int(size[2]))+\
         '_nb_'+str(int(nb))+'.hdf5'
 
+    if nk == np.prod(size):
+        Name = material_name+\
+        "_{0}x{1}x{2}_TrB_{3:4.2f}eV_nb_{4}.hdf5".format(size[0],size[1],size[2],Eg,nb)
+    else:
+        Name = material_name+\
+        "_kpts_{0}_TrB_{1:4.2f}eV_nb_{2}.hdf5".format(nk,Eg,nb)
+
+
+
+
     ############################################################################
     #                  Reading matrix elements for "PMAT.OUT"
     ############################################################################
-    k_bytes    = 8 # number of bytes requbired to store a single component of 3D k_vector
+    """
+
+    ELK stores momentum matrix elements in the following binary format:
+
+    Lets assume, we have "nk" number of kpoints and "nb" number of energy bands.
+
+    To store a single band number it needs 4bytes.
+    To store a single kpoint component (let say "kx") it needs 8bytes.
+    To store a complete k-vector it needs 8x3 = 24bytes
+    To store a single component of momentum matrix it needs 16bytes (8 for the real part
+    and 8 for the imaginary part)
+
+    Total size of the binary file PMAT.OUT is = nk*(4+24+nb*nb*3*2) bytes
+
+    A single line in "PMAT.OUT" file represents a byte.
+    First 28bytes(3*8+4) or lines of PMAT.OUT stores the k-vectors and band number information then
+    next nb*nb*3*2 bytes contains momentum matrix elements for the k-vectors defined in first 28bytes.
+
+    | kx[0]    }
+    | ky[0]      }
+    | kz[0]        }
+    | nb             }>| First (4+24+nb*nb*3*2) bytes or lines contains inforamtion about all
+    | PMAT[0,...]    }>| the momentum matrix elements belongs to the k-point number zero
+    |  .           }
+    |  .         }
+    |  .       }
+
+
+    | kx[1]   }
+    | ky[1]     }
+    | kz[1]       }
+    | nb            }>| Next, (4+24+nb*nb*3*2) bytes or lines contains inforamtion about all the momentum matrix
+    | PMATs         }>| elements belongs to the k-point number one
+    |  .          }
+    |  .        }
+    |  .      }
+
+    and so...
+
+    """
+
+    k_bytes    = 8 # number of bytes required to store a single component of 3D k_vector
     pmat_bytes = 8 # number of bytes required to store a real/imaginary part of a single momentum matrix element
     n_bytes    = 4 # number of bytes required to store total number of bands
 
+    offset = 3*k_bytes+n_bytes # first 28 bytes are used to store 3 components of k_vector(3*k_bytes) and band index ()
+    pmat_total_bytes = pmat_bytes*3*nb*nb*2
     momentum = np.empty([nk,nb,nb,3],dtype = complex)
 
-    for i in range(nk):
-        buffer =3*k_bytes+n_bytes + i*(3*k_bytes+n_bytes+ pmat_bytes*3*nb*nb*2)
-        #print(buffer)
-        with open(input_momentum,'rb') as f:
-            f.seek(buffer)
-            data = np.fromfile(f, dtype = 'float64')
+    with open(input_momentum,'rb') as f:
+        for i in range(nk):
+            f.seek(offset + i*(offset+pmat_total_bytes))
+            data = np.fromfile(f, dtype = 'float64',count = pmat_total_bytes)
+            temp = np.reshape(data[0:int(pmat_total_bytes/pmat_bytes)],(2,nb,nb,3), order='F')
+            momentum[i,...] = temp[0,...]+ 1j*temp[1,...]
 
-        temp = np.reshape(data[0:2*3*nb*nb],(2,nb,nb,3), order='F')
-        momentum[i,...] = temp[0,...]+ 1j*temp[1,...]
+
+
+
 
     with h5py.File(os.path.join(output_file_path,Name), "w") as f:
         f.create_dataset("nk",data = nk)

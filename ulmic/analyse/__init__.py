@@ -702,61 +702,100 @@ class FinalStateAnalyzer:
         hole_energy = - np.sum((1 - self.rho_diagonal[:, :nv]) * self.medium.energy[:, :nv])
         return (electron_energy + hole_energy) * self.medium.spin_factor / (self.medium.volume * nk)
 
-    def analyze_excitations(self, bin_size, maximal_transition_energy):
-        """ Analyze how excitation probabilities depend on transition frequencies.
+    def energy_dependent_probabilities(self, energies, averaging_window_FWHM):
+        """ Calculate the probability of finding a charge carrier with a given energy
 
+        For energies that correspond to conduction bands, the function returns the
+        probabilities of fiding an electron with a certain energy. For valence bands,
+        the function returns the probabilities of finding a hole.
+        
         Parameters
         ----------
-        bin_size: (float) the size of a single energy bin; it must be positive;
-        maximal_transition_energy: (float).
-
-        Returns: (energy_bins, bin_occupations)
+        energies : an array of energies, for which the DOS needs to be evaluated;
+        averaging_window_FWHM: the full width at half maximum of the Gaussian window
+                            that is used for averaging;
+        
+        Returns
         -------
-        energy_bins: (nbins,) An array specifying the energy bins.
-        bin_occupations: an array of shape (nbins,) that contains the average excitation
-            probabilities within each energy bin. The i-th element of this array contains
-            the average number of valence electrons excited to conduction bands where the
-            transition energy lies within the interval
-                energy_bins[i-1] < hbar*omega_{nm} <= energy_bins[i].
+        result : an array that has the same shape as "energies";
         """
-        nv = self.medium.nv
-        nk = self.medium.nk
-        # initialize the energy bins
-        E_min = np.min(self.medium.energy[:, nv] - self.medium.energy[:, nv-1])
-        E_max = np.max(self.medium.energy[:, -1] - self.medium.energy[:, 0])
-        nbins = 1 + int(np.ceil((maximal_transition_energy - E_min) / bin_size))
-        if maximal_transition_energy < E_max:
-            maximal_transition_energy = E_min + bin_size * (nbins - 1)
-            if maximal_transition_energy < E_max:
-                nbins += 1
-        energy_bins = np.empty(nbins)
-        if maximal_transition_energy < E_max:
-            energy_bins[:-1] = E_min + bin_size * np.arange(nbins-1)
-            energy_bins[-1] = E_max
-        else:
-            energy_bins[:] = E_min + bin_size * np.arange(nbins)
-        # fill the bins
-        bin_occupations = np.zeros(nbins)
-        counts = np.zeros(nbins, dtype=np.intp)
-        for initial_band in range(nv):
-            psi = self.psi[:, :, initial_band]
-            excitation_probabilities = np.real(psi * psi.conj()) # (nk, nb)
-            # sort the transitions by frequency
-            X = self.medium.energy[:, nv:] - self.medium.energy[:, initial_band, np.newaxis]
-            X = X.flatten()
-            Y = excitation_probabilities[:, nv:].flatten()
-            order = np.argsort(X)
-            X = X[order]
-            Y = Y[order]
-            # put the data into the bins
-            indices = np.digitize(X, energy_bins[:-1], right=True)
-            for i in range(len(Y)): # THERE MUST BE A SMARTER WAY TO DO THIS!
-                bin_occupations[indices[i]] += Y[i]
-                counts[indices[i]] += 1
-        # average the occupation numbers
-        c = (counts != 0)
-        bin_occupations[c] = bin_occupations[c] / counts[c]
-        # diagnostics
-        print("average counts per bin:", counts.mean())
-        # return the results
-        return (energy_bins, bin_occupations)
+        result = np.zeros(energies.size)
+        exp_factor = 4 * np.log(2.0) / averaging_window_FWHM**2
+        # find the energies limiting the band gap
+        E1 = np.max(self.medium.energy[:, self.medium.nv - 1])
+        E2 = np.min(self.medium.energy[:, self.medium.nv])
+        # evaluate the probabilities
+        for i in range(energies.size):
+            energy = energies[i]
+            Y = exp_factor * (self.medium.energy - energy)**2
+            weights = np.zeros_like(Y)
+            s = (Y < 30)
+            weights[s] = np.exp(-Y[s])
+            if energy <= E1: # holes
+                weights[self.medium.energy > E1] = 0
+                Y = 1 - self.rho_diagonal
+                Y[Y < 0] = 0
+                result[i] = np.sum(weights * Y) / np.sum(weights)
+            elif energy >= E2:
+                weights[self.medium.energy < E2] = 0
+                result[i] = np.sum(weights * self.rho_diagonal) / np.sum(weights)
+        return result.reshape(energies.shape)
+
+    ## def analyze_excitations(self, bin_size, maximal_transition_energy):
+    ##     """ Analyze how excitation probabilities depend on transition frequencies.
+    ## 
+    ##     Parameters
+    ##     ----------
+    ##     bin_size: (float) the size of a single energy bin; it must be positive;
+    ##     maximal_transition_energy: (float).
+    ## 
+    ##     Returns: (energy_bins, bin_occupations)
+    ##     -------
+    ##     energy_bins: (nbins,) An array specifying the energy bins.
+    ##     bin_occupations: an array of shape (nbins,) that contains the average excitation
+    ##         probabilities within each energy bin. The i-th element of this array contains
+    ##         the average number of valence electrons excited to conduction bands where the
+    ##         transition energy lies within the interval
+    ##             energy_bins[i-1] < hbar*omega_{nm} <= energy_bins[i].
+    ##     """
+    ##     nv = self.medium.nv
+    ##     nk = self.medium.nk
+    ##     # initialize the energy bins
+    ##     E_min = np.min(self.medium.energy[:, nv] - self.medium.energy[:, nv-1])
+    ##     E_max = np.max(self.medium.energy[:, -1] - self.medium.energy[:, 0])
+    ##     nbins = 1 + int(np.ceil((maximal_transition_energy - E_min) / bin_size))
+    ##     if maximal_transition_energy < E_max:
+    ##         maximal_transition_energy = E_min + bin_size * (nbins - 1)
+    ##         if maximal_transition_energy < E_max:
+    ##             nbins += 1
+    ##     energy_bins = np.empty(nbins)
+    ##     if maximal_transition_energy < E_max:
+    ##         energy_bins[:-1] = E_min + bin_size * np.arange(nbins-1)
+    ##         energy_bins[-1] = E_max
+    ##     else:
+    ##         energy_bins[:] = E_min + bin_size * np.arange(nbins)
+    ##     # fill the bins
+    ##     bin_occupations = np.zeros(nbins)
+    ##     counts = np.zeros(nbins, dtype=np.intp)
+    ##     for initial_band in range(nv):
+    ##         psi = self.psi[:, :, initial_band]
+    ##         excitation_probabilities = np.real(psi * psi.conj()) # (nk, nb)
+    ##         # sort the transitions by frequency
+    ##         X = self.medium.energy[:, nv:] - self.medium.energy[:, initial_band, np.newaxis]
+    ##         X = X.flatten()
+    ##         Y = excitation_probabilities[:, nv:].flatten()
+    ##         order = np.argsort(X)
+    ##         X = X[order]
+    ##         Y = Y[order]
+    ##         # put the data into the bins
+    ##         indices = np.digitize(X, energy_bins[:-1], right=True)
+    ##         for i in range(len(Y)): # THERE MUST BE A SMARTER WAY TO DO THIS!
+    ##             bin_occupations[indices[i]] += Y[i]
+    ##             counts[indices[i]] += 1
+    ##     # average the occupation numbers
+    ##     c = (counts != 0)
+    ##     bin_occupations[c] = bin_occupations[c] / counts[c]
+    ##     # diagnostics
+    ##     print("average counts per bin:", counts.mean())
+    ##     # return the results
+    ##     return (energy_bins, bin_occupations)

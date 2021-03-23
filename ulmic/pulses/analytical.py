@@ -62,8 +62,6 @@ class AnalyticalPulse:
         vector_potential = np.zeros(3)
         if self.variables['envelope'] == 'gauss':
             vector_potential += self.get_gaussian_vector_potential(self.variables,t)
-        elif self.variables['envelope'] == 'constant':
-            vector_potential += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'HCP':
             vector_potential += self.get_HCP_vector_potential(self.variables,t)
         elif self.variables['envelope'] == '1cycle':
@@ -83,8 +81,6 @@ class AnalyticalPulse:
         electric_field = np.zeros(3)
         if self.variables['envelope'] == 'gauss':
             electric_field += self.get_gaussian_electric_field(self.variables,t)
-        elif self.variables['envelope'] == 'constant':
-            electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'HCP':
             electric_field += self.get_HCP_electric_field(self.variables,t)
         elif self.variables['envelope'] == '1cycle':

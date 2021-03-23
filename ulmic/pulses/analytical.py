@@ -72,6 +72,9 @@ class AnalyticalPulse:
             vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             vector_potential += self.get_cos4_vector_potential(self.variables,t)
+        elif self.variables['envelope'] == 'delta_spike':
+            if t >= self.variables['delay']:
+                vector_potential += self.variables['A0'] * self.variables['polarisation_vector'].real
         else:
             raise ValueError('Pulse parameter {} for envelope is not valid'.format(self.variables['envelope']))
         return vector_potential
@@ -90,6 +93,9 @@ class AnalyticalPulse:
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             electric_field += self.get_cos4_electric_field(self.variables,t)
+        elif self.variables['envelope'] == 'delta_spike':
+            if t == self.variables['delay']:
+                electric_field += np.finfo(np.float).max * self.variables['polarisation_vector'].real
         else:
             raise ValueError('Pulse parameter {} for envelope s not valid'.format(self.variables['envelope']))
         return electric_field

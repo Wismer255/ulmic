@@ -6,6 +6,7 @@ from ulmic.ulmi.result_manager import ResultManager
 from ulmic.ulmi.state_manager import StateManager
 from ulmic.logs import Logs
 import numpy as np
+import sys
 
 log = Logs('ulmi')
 
@@ -102,3 +103,8 @@ class UltrafastLightMatterInteraction:
                 setattr(self.state_manager, kwarg, kwargs[kwarg])
             else:
                 raise ValueError('Parameter {} not recognized!'.format(kwarg))
+        # check the parameters
+        if self.state_manager.gauge != "vg":
+            for pulse in self.pulses:
+                if pulse.variables['envelope'] == 'delta_spike':
+                    print("ERROR: the delta_spike envelope is allowed only in the velocity gauge", file=sys.stderr)

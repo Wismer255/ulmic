@@ -47,7 +47,8 @@ class Pulses(PulseProperties):
                 else:
                     raise ValueError('String {} not recognized as a valid pulse name or file is not found.'.format(pulse))
             elif type(pulse) == type(dict()):
-                if all (key in pulse for key in ['E0', 'envelope', 'polarisation_vector', 'delay']):
+                # if all (key in pulse for key in ['E0', 'envelope', 'polarisation_vector', 'delay']):
+                if all (key in pulse for key in ['envelope']):
                     self.pulse_list.append(AnalyticalPulse(pulse))
                 elif all (key in pulse for key in ['file','data_type','E0','polarisation_vector']):
                     self.pulse_list.append(InterpolatedPulse(**pulse))

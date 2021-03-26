@@ -119,8 +119,6 @@ class SolverManager:
         print('Total number of steps: {:d}'.format(self.solver_manager.total_number_of_steps))
 
     def running(self):
-        if self.index_progression < self.nt_out-1:
-            self.time_progression += self.default_dt
-            self.index_progression += 1
-            return True
-        else: return False
+        self.time_progression += self.default_dt
+        self.index_progression += 1
+        return (self.index_progression < self.nt_out-1)

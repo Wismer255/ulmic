@@ -80,11 +80,14 @@ class UltrafastLightMatterInteraction:
                                                                                      self.solver_manager.time_progression,
                                                                                      self.state_manager.result_absolute_error.max(),
                                                                                      self.state_manager.result_relative_error.max()))
+            # update the current time
+            self.solver_manager.time_progression += self.default_dt
+            self.solver_manager.index_progression += 1            
             # evaluate observables
             self.observables_manager.evaluate_observables(self.solver_manager.time_progression,
                                                           self.solver_manager.index_progression)
-            # see if it's time to stop and, if not, update the time
-            if not self.solver_manager.running():
+            # see if it's time to stop
+            self.index_progression >= self.nt_out - 1:
                 break
 
         if self.solver_manager.flags['--print-timestep']:

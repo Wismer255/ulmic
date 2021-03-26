@@ -32,8 +32,9 @@ class SolverManager:
         self.set_field_directions()
         self.total_number_of_steps = 0
         if str(self.options['time_step']).lower() == 'auto':
-            self.default_dt = np.mean(np.diff(self.time_in)) # it may change later
-            self.options['time_step_min'] = min(self.default_dt, self.options['time_step_min'])
+            self.default_dt = self.time_in[1] - self.time_in[0] # it may change later
+            self.options['time_step_min'] = min(min(np.diff(self.time_in)),
+                self.options['time_step_min'])
         elif type(self.options['time_step']) == float:
             self.default_dt = self.options['time_step']
             self.division_counter = 0

@@ -81,7 +81,12 @@ class StateManager(InitialState):
     def propagate_solution(self,):
         """ Propagate over a time interval of self.solver.default_dt """
         self.time_now = self.solver.time_progression
-        self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
+        adjustable_dt = (str(self.solver.options['time_step']).lower() == 'auto')
+        if adjustable_dt:
+            self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
+        else:
+            self.solver.division_counter = 1
+            self.dt_now = min(self.solver.default_dt, self.solver.options['time_step'])
         self.cumulative_dt = 0.0
 
         while True:
@@ -103,28 +108,36 @@ class StateManager(InitialState):
                 elif self.equation == 'lvn':
                     tmp_state, tmp_abs_error, tmp_rel_error = self.solve_lvn_vg()
 
-            if self.check_solution(tmp_state, tmp_abs_error, tmp_rel_error):
-                # see if the propagation inteval is over
-                if self.solver.default_dt - self.cumulative_dt < 1e-14 * self.dt_now:
-                    break
-                # see if it's time to increase the time step
-                if self.solver.division_counter > 0 and \
-                        str(self.solver.options['time_step']).lower() == 'auto' and \
-                        self.solver.accepted_step_counter >= 10:
-                    self.dt_now *= 2
-                    self.solver.division_counter -= 1
+            if adjustable_dt:
+                if self.check_solution(tmp_state, tmp_abs_error, tmp_rel_error):
+                    # see if the propagation interval is over
+                    if np.abs(self.solver.default_dt - self.cumulative_dt) < 1e-14 * self.dt_now:
+                        break
+                    # see if it's time to increase the time step
+                    if self.solver.division_counter > 0 and \
+                            self.solver.accepted_step_counter >= 10:
+                        self.dt_now *= 2
+                        self.solver.division_counter -= 1
+                        self.solver.accepted_step_counter = 0
+                else:
+                    # reduce the time step
+                    self.solver.division_counter += 1
                     self.solver.accepted_step_counter = 0
+                    self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
+                    if self.dt_now < self.solver.options['time_step_min']:
+                        if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
+                            raise RuntimeError('Time step is below dt_tolerance!')
+                        self.force_propagation = True
+                        warnings.warn('Time step is below dt_tolerance! Forcing advancement')
+                        self.dt_now = self.solver.options['time_step_min']
             else:
-                # reduce the time step
-                self.solver.division_counter += 1
-                self.solver.accepted_step_counter = 0
-                self.dt_now = self.solver.default_dt / (2 ** self.solver.division_counter)
-                if self.dt_now < self.solver.options['time_step_min']:
-                    if self.solver.flags['--dt-break'] and self.solver.flags['--dump-state']:
-                        raise RuntimeError('Time step is below dt_tolerance!')
-                    self.force_propagation = True
-                    warnings.warn('Time step is below dt_tolerance! Forcing advancement')
-                    self.dt_now = self.solver.options['time_step_min']
+                self.state = tmp_state
+                self.cumulative_dt += self.dt_now
+                if tmp_abs_error > self.result_absolute_error[index]:
+                    self.result_absolute_error[index] = tmp_abs_error
+                if tmp_rel_error > self.result_relative_error[index]:
+                    self.result_relative_error[index] = tmp_rel_error
+                self.solver.accepted_step_counter += 1
 
             self.dt_now = min(self.dt_now, self.solver.default_dt - self.cumulative_dt)
 

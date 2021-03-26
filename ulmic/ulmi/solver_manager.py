@@ -118,7 +118,3 @@ class SolverManager:
     def track_finish(self):
         print('Total number of steps: {:d}'.format(self.solver_manager.total_number_of_steps))
 
-    def running(self):
-        self.time_progression += self.default_dt
-        self.index_progression += 1
-        return (self.index_progression < self.nt_out-1)

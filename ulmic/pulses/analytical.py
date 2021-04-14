@@ -90,7 +90,7 @@ class AnalyticalPulse:
         elif self.variables['envelope'] == 'cos4':
             electric_field += self.get_cos4_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'delta_spike':
-            if t == self.variables['delay']:
+            if t == self.variables['delay'] and self.variables['A0'] != 0:
                 electric_field += np.finfo(np.float).max * self.variables['polarisation_vector'].real
         else:
             raise ValueError('Pulse parameter {} for envelope s not valid'.format(self.variables['envelope']))

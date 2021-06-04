@@ -103,7 +103,7 @@ def create_elk_hdf5(path_to_elk_OUT, output_file_path):
     exc_index = [x for x in range(len(info_file)) if 'Exchange-correlation' in info_file[x]][0]
     exc = [int(x) for x in (info_file[exc_index].split()[-3:])]
 
-    if exc[0] is 100:
+    if exc[0] == 100:
         exc = 'TrB'
     elif exc[0] == 2 or exc[0]== 4:
         exc = 'LDA'

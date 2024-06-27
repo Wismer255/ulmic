@@ -41,7 +41,7 @@ class LoadHdf5:
             size:       number of k-points along each reciprocal axis (Monkhorst-Pack w/ Gamma point)
             spin_factor:number of electrons per band
             klist1d:    (nk,3) array of reduced coordinates of the k-points
-            kllist3d:   (nk1,nk2,nk3) array of k-point indices with (0,0,0) being the Gamma point
+            klist3d:   (nk1,nk2,nk3) array of k-point indices with (0,0,0) being the Gamma point
             lattice_vectors:    (3,3) column vectors of the unit cell in Cartesian coordinates
             reciprocal_vectors: (3,3) column vectors
             energy:     (nk,nb)

@@ -106,9 +106,9 @@ class SolverManager:
 
 
     def set_field_directions(self):
-        directions = np.zeros(3, dtype=np.bool)
+        directions = np.zeros(3, dtype=bool)
         for pulse in self.pulses.get_parameters():
-            directions += pulse['polarisation_vector'].astype(np.bool)
+            directions += pulse['polarisation_vector'].astype(bool)
         self.directions = np.where(directions)[0].astype(np.intp)
 
     def track(self,time_now):

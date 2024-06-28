@@ -362,7 +362,7 @@ class FinalStateAnalyzer:
         ## nk = self.medium.nk
         ## nb = self.medium.nb
         nw = len(omega_array)
-        sigma = np.zeros((nw, 3, 3), dtype=np.complex)
+        sigma = np.zeros((nw, 3, 3), dtype=complex)
         if inverse_mass is None:
             inverse_mass = self.medium.calculate_inverse_mass(gap_threshold)
         if subtract_initial_state:

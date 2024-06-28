@@ -93,7 +93,7 @@ class ObservablesManager:
                              self.solver.nk_mesh, self.medium.nk_vol,
                              self.medium.volume, self.current)
 
-        evaluate_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
+        evaluate_acceleration_jit(self.state.state, index, self.medium.energy.astype(complex),
                                   self.medium.momentum, time_now, self.solver.nk_mesh,
                                   self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
@@ -120,7 +120,7 @@ class ObservablesManager:
         evaluate_lvn_energy_jit(self.state.state, self.medium.nb, self.medium.nv, index, self.medium.energy,
                                 self.medium.momentum, time_now, self.solver.nk_mesh, self.medium.nk_vol,
                                 self.medium.volume, self.absorbed_energy)
-        evaluate_lvn_acceleration_jit(self.state.state, index, self.medium.energy.astype(np.complex),
+        evaluate_lvn_acceleration_jit(self.state.state, index, self.medium.energy.astype(complex),
                                       self.medium.momentum, time_now, self.solver.nk_mesh,
                                       self.medium.nk_vol, self.medium.volume, self.acceleration_2nd)
 
@@ -131,7 +131,7 @@ class ObservablesManager:
                                                 self.medium.momentum,
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,
-                                                self.medium.energy.astype(np.complex128),
+                                                self.medium.energy.astype(complex128),
                                                 self.solver.nk_mesh,
                                                 self.medium.lattice_vectors,
                                                 self.medium.size,
@@ -143,7 +143,7 @@ class ObservablesManager:
                                                 self.medium.momentum,
                                                 self.medium.overlap,
                                                 self.forward_neighbour_table,
-                                                self.medium.energy.astype(np.complex128),
+                                                self.medium.energy.astype(complex128),
                                                 self.solver.nk_mesh,
                                                 self.medium.lattice_vectors,
                                                 self.medium.size,

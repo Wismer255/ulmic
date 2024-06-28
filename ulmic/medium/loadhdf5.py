@@ -195,10 +195,10 @@ class LoadHdf5:
     def load_momentum(self, slice_k, slice_band):
         hdf5_data = h5py.File(self.input_file, 'r')
         if 'momentum' in hdf5_data:
-            self.momentum = np.zeros((len(slice_k),len(slice_band),len(slice_band),3),np.complex128)
+            self.momentum = np.zeros((len(slice_k),len(slice_band),len(slice_band),3),complex128)
             slice_band = np.array(slice_band) # just to be sure
             for i in range(len(slice_k)):
-                P = hdf5_data['momentum'][slice_k[i]].astype(np.complex128)
+                P = hdf5_data['momentum'][slice_k[i]].astype(complex128)
                 self.momentum[i] = P[slice_band[:,None], slice_band, :]
         else:
             logging.warning('Momentum matrix not present in {}. '
@@ -208,7 +208,7 @@ class LoadHdf5:
     def load_overlap(self, slice_k, slice_band):
         hdf5_data = h5py.File(self.input_file, 'r')
         if 'overlap' in hdf5_data:
-            self.overlap = np.zeros((len(slice_k),3,2,len(slice_band),len(slice_band)),np.complex128)
+            self.overlap = np.zeros((len(slice_k),3,2,len(slice_band),len(slice_band)),complex128)
             slice_band = np.array(slice_band) # just to be sure
             for i in range(len(slice_k)):
                 O = hdf5_data['overlap'][slice_k[i]]

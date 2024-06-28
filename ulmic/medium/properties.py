@@ -52,7 +52,7 @@ class MediumProperties(MediumManipulator):
         return np.array([Neffx,Neffy,Neffz])/self.nk
 
     def calculate_berry_curvature_for_band(self,band_index):
-        berry_curvature = np.zeros((self.nk,3,3,), dtype=np.complex)
+        berry_curvature = np.zeros((self.nk,3,3,), dtype=complex)
         #for i in range(self.nk):
         for k in range(self.nb):
             if k != band_index:
@@ -128,8 +128,8 @@ class MediumProperties(MediumManipulator):
         """
         ndims = self.momentum.shape[-1] # the number of dimensions
         inverse_mass = np.zeros([self.nk, self.nb, ndims, ndims])
-        numerator   = np.empty(self.nk, dtype=np.complex)
-        denominator = np.empty(self.nk, dtype=np.complex)
+        numerator   = np.empty(self.nk, dtype=complex)
+        denominator = np.empty(self.nk, dtype=complex)
         FD_inverse_mass = self.finite_difference_inverse_mass()
         for n in range(self.nb):
             denominator = self.energy[:, n].reshape((self.nk, 1)) - self.energy
@@ -188,7 +188,7 @@ class MediumProperties(MediumManipulator):
         """
         ndims = self.momentum.shape[-1]  # number of dimensions
         inverse_mass = np.empty((self.nb, ndims, ndims))
-        H0 = np.diag(self.energy[ik, :]+0.5*dk**2).astype(np.complex)
+        H0 = np.diag(self.energy[ik, :]+0.5*dk**2).astype(complex)
         Ek = np.zeros((self.nb, 3, 3, 3))
         pk = self.momentum[ik, ...]
         Ek[:, 1, 1, 1] = self.energy[ik, :]

@@ -1,0 +1,18 @@
+MAKE MPI USEFUL!!!
+(As I'm writing this, it seems that MPI is useless when running on the Draco cluster. At the same time,
+when I run the code on my desktop PC without MPI, I see that it uses a single core.)
+
+Make sure that 1D and 2D simulations work with no surpises (many parts of the code always assume that there are 3 dimensions).
+
+============
+ulmic.pulses
+============
+- the interface must be more intuitive: it must be possible to specify pulse attributes at the moment of creation (it's not very intuitive to write pulses.variables[0]['envelope'] = 'gauss')
+- it should be possible to evaluate A(t) end E(t) for array arguments
+
+
+===========
+AtomicUnits
+===========
+This shouldn't be a class -- this should be a module.
+

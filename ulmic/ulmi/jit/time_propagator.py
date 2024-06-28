@@ -28,7 +28,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
     nb,nv = rho.shape
     n_cs = 7
     n,m = rho.shape
-    drho = np.zeros((n_cs,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -54,13 +54,13 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
                        +momentum3d[k,:,:,2]*As[i,2])*mask
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
 
-        Z = np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian
+        Z = np.diag(energy3d[k,:]).astype(complex128) + Hamiltonian
         non_hermitian = np.dot(Z, Z)
         drho[i] += -0.5*gamma*np.dot(non_hermitian, tmp_rho)
 
 
-    out5 = np.zeros((n,m), dtype=np.complex128)
-    error = np.zeros((n,m), dtype=np.complex128)
+    out5 = np.zeros((n,m), dtype=complex128)
+    error = np.zeros((n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        # out5 += dt*sol5[i]*drho[i]
@@ -70,7 +70,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
     denominator = max(relative_error_min,np.sqrt(np.trace(np.dot(np.conj(out5).T,out5)).real))
     relative_error = absolute_error/denominator
 
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out = np.zeros(rho.shape, dtype=complex128)
     jump_occured = False
     min_norm = 1.0
     for i in range(nv):
@@ -85,7 +85,7 @@ def jit_step_vg_wavefunctions_k_dp45_stdse(k,t,dt,energy3d,momentum3d,rho,As,gam
             Hamiltonian = (momentum3d[k,:,:,0]*As[0,0]
                            +momentum3d[k,:,:,1]*As[0,1]
                            +momentum3d[k,:,:,2]*As[0,2])*mask
-            rho_out[:,i] = np.dot(np.diag(energy3d[k,:]).astype(np.complex128)+Hamiltonian, rho[:,i])
+            rho_out[:,i] = np.dot(np.diag(energy3d[k,:]).astype(complex128)+Hamiltonian, rho[:,i])
             jump_occured = True
         else:
             rho_out[:,i] = rho[:,i] + out5[:,i]
@@ -101,7 +101,7 @@ def jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho,As):
 
     n_cs = 7
     n,m = rho.shape
-    drho = np.zeros((n_cs,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -127,8 +127,8 @@ def jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho,As):
                              +momentum3d[k,:,:,2]*As[i,2])*mask,tmp_rho)
 
 
-    out5 = np.zeros((n,m), dtype=np.complex128)
-    error = np.zeros((n,m), dtype=np.complex128)
+    out5 = np.zeros((n,m), dtype=complex128)
+    error = np.zeros((n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        # out5 += dt*sol5[i]*drho[i]
@@ -143,7 +143,7 @@ def jit_step_vg_wavefunctions_k_dp45(k,t,dt,energy3d,momentum3d,rho,As):
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_step_vg_wavefunctions_dp45(nk,t,dt,energy3d,momentum3d,rho,As):
-    rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out5 = np.zeros(rho.shape, dtype=complex128)
     absolute_error = np.zeros(nk)
     relative_error = np.zeros(nk)
     for k in prange(nk):
@@ -156,7 +156,7 @@ def jit_step_vg_wavefunctions_dp45(nk,t,dt,energy3d,momentum3d,rho,As):
 
 @njit(parallel=True)
 def jit_step_vg_wavefunctions_dp45_stdse(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
-    rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out5 = np.zeros(rho.shape, dtype=complex128)
     absolute_error = np.zeros(nk)
     relative_error = np.zeros(nk)
     ## jump_occured_all = False
@@ -177,7 +177,7 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 
     n_cs = 7
     n,m = rho.shape
-    drho = np.zeros((n_cs,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -205,10 +205,10 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
         drho[i] = -1j*np.dot(Hamiltonian,tmp_rho)
         drho[i] += np.conj(drho[i].T)
         drho[i] += gamma*lindblad_term(tmp_rho,
-            np.diag(energy3d[k,:]).astype(np.complex128) + Hamiltonian)
+            np.diag(energy3d[k,:]).astype(complex128) + Hamiltonian)
 
-    out5 = np.zeros((n,m), dtype=np.complex128)
-    error = np.zeros((n,m), dtype=np.complex128)
+    out5 = np.zeros((n,m), dtype=complex128)
+    error = np.zeros((n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
@@ -222,7 +222,7 @@ def jit_step_vg_lvn_k_dp45(k,t,dt,energy3d,momentum3d,rho,As,gamma):
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_step_vg_lvn_dp45(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
-    rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out5 = np.zeros(rho.shape, dtype=complex128)
     absolute_error = np.zeros(nk)
     relative_error = np.zeros(nk)
     for k in prange(nk):
@@ -236,7 +236,7 @@ def jit_step_vg_lvn_dp45(nk,t,dt,energy3d,momentum3d,rho,As,gamma):
 
 @njit(parallel=True)
 def step_vg_lvn(nk,t,energy3d,momentum3d,rho,As):
-    drho = np.zeros(rho.shape, dtype=np.complex128)
+    drho = np.zeros(rho.shape, dtype=complex128)
     for k in prange(nk):
         v1 = np.exp(1j*(t)*energy3d[k,:])
         mask = np.outer(v1,np.conj(v1))
@@ -254,7 +254,7 @@ def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,ga
 
     n_cs = 7
     n,m = rho.shape
-    drho = np.zeros((n_cs,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -268,7 +268,7 @@ def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,ga
     sol5 = np.array([5179.0/57600.0, 0.0, 7571.0/16695.0, 393.0/640.0, -92097.0/339200.0, 187.0/2100.0, 1.0/40.0])
 
 
-    decoherence_exponents = np.zeros((n,n), dtype=np.complex128)
+    decoherence_exponents = np.zeros((n,n), dtype=complex128)
     for i in range(n):
         for j in range(n):
             if i != j:
@@ -292,8 +292,8 @@ def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,ga
         #lindblad = gamma*lindblad_term(tmp_rho,(1.0+0.0*1j)*np.diag(energy3d[k,:])+0*Hamiltonian)
         #drho[i] += 0.5*(lindblad + np.conj(lindblad.T))
 
-    out5 = np.zeros((n,m), dtype=np.complex128)
-    error = np.zeros((n,m), dtype=np.complex128)
+    out5 = np.zeros((n,m), dtype=complex128)
+    error = np.zeros((n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
@@ -307,7 +307,7 @@ def jit_step_vg_lvn_k_dp45_FAKE_DECOHERENCE(k,t,dt,energy3d,momentum3d,rho,As,ga
 #@jit('Tuple((complex128[:,:,:],float64,float64))(int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:,:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_step_vg_lvn_dp45_FAKE_DECOHERENCE(nk,t,dt,energy3d,momentum3d,rho,As,gamma, average_energy_difference):
-    rho_out5 = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out5 = np.zeros(rho.shape, dtype=complex128)
     absolute_error = np.zeros(nk)
     relative_error = np.zeros(nk)
     for k in prange(nk):
@@ -344,7 +344,7 @@ def jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
 #@jit('complex128[:,:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_step_vg_wavefunctions(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out = np.zeros(rho.shape, dtype=complex128)
     for k in prange(nk):
         rho_out[k,:,:] = jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4)
     return rho_out
@@ -353,7 +353,7 @@ def jit_step_vg_wavefunctions(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
 ## #@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 ## @njit
 ## def jit_step_vg_wavefunctions_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4):
-##     rho_out = np.zeros(rho.shape, dtype=np.complex128)
+##     rho_out = np.zeros(rho.shape, dtype=complex128)
 ##     for k in k_chunk:
 ##         rho_out[k,:,:] = jit_step_vg_wavefunctions_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4)
 ##     return rho_out
@@ -392,7 +392,7 @@ def jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
 #@jit('complex128[:,:,:](int64,float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_step_vg_lvn(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out = np.zeros(rho.shape, dtype=complex128)
     for k in prange(nk):
         rho_out[k,:,:] = jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma)
     return rho_out
@@ -401,7 +401,7 @@ def jit_step_vg_lvn(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
 ## #@jit('complex128[:,:,:](int64[:],float64,float64,float64[:,:],complex128[:,:,:,:],complex128[:,:,:],float64[:],float64[:],float64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 ## @njit
 ## def jit_step_vg_lvn_chunk(k_chunk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
-##     rho_out = np.zeros(rho.shape, dtype=np.complex128)
+##     rho_out = np.zeros(rho.shape, dtype=complex128)
 ##     for k in k_chunk:
 ##         rho_out[k,:,:] = jit_step_vg_lvn_k(k,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma)
 ##     return rho_out
@@ -410,7 +410,7 @@ def jit_step_vg_lvn(nk,t,dt,energy3d,momentum3d,rho,A1,A2,A4,gamma):
 #==================== Length gauge, TDSE ================================
 @njit
 def step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
-    rho_out = np.zeros(rho[k,:,:].shape, dtype=np.complex128)
+    rho_out = np.zeros(rho[k,:,:].shape, dtype=complex128)
     rho0 = np.copy(rho[k,:,:])
     rho0_norm = np.copy(rho[k,:,:])
     for i in range(nv):
@@ -445,12 +445,12 @@ def step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions)
 
 @njit(parallel=True)
 def nonperturbative_jit_solver_lvn(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
-    rho_norm = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out = np.zeros(rho.shape, dtype=complex128)
+    rho_norm = np.zeros(rho.shape, dtype=complex128)
 
     for k in prange(nk):
         Uk,Sk,Vhk = np.linalg.svd(rho[k,:,:])
-        rho_norm[k] = np.dot(Uk,np.dot(np.diag(np.sqrt(Sk.astype(np.complex128))),Vhk))
+        rho_norm[k] = np.dot(Uk,np.dot(np.diag(np.sqrt(Sk.astype(complex128))),Vhk))
 
     for k in prange(nk):
         rho0 = rho_norm[k]
@@ -482,7 +482,7 @@ def nonperturbative_jit_solver_lvn(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_
 #@jit('complex128[:,:,:](int64,int64[:],int64,complex128[:,:,:],complex128[:,:,:,:,:], int64[:,:,:], float64[:,:], float64[:],float64)',nopython=True,cache=True)#,parallel=True)#,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def nonperturbative_jit_solver(nk,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions):
-    rho_out = np.zeros(rho.shape, dtype=np.complex128)
+    rho_out = np.zeros(rho.shape, dtype=complex128)
     for k in prange(nk):
         tmp = step_lg(k,nk_periodicity,nv,rho,S,table,energy3d,Et_crystal,time,directions)
         rho_out[k,:,:] = tmp
@@ -500,7 +500,7 @@ def jit_step_lg_wavefunctions_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size
 
     _,n,m = rho.shape
     nv = m
-    drho = np.zeros((n_cs,nk,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,nk,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -521,8 +521,8 @@ def jit_step_lg_wavefunctions_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size
         drho[i] = -1j*nonperturbative_jit_solver(nk,size,nv,tmp_rho,overlap,neighbour_table,
                                                  energy3d,Es[i],t+cs[i]*dt,directions)
 
-    out5 = np.zeros((nk,n,m), dtype=np.complex128)
-    error = np.zeros((nk,n,m), dtype=np.complex128)
+    out5 = np.zeros((nk,n,m), dtype=complex128)
+    error = np.zeros((nk,n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
@@ -546,7 +546,7 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
         Es[i,:] = np.dot(lattice_vectors.T,Es_cartesian[i,:])
     _,n,m = rho.shape
     nv = m
-    drho = np.zeros((n_cs,nk,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,nk,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -559,7 +559,7 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
     sol4 = np.array([35.0/384.0, 0.0, 500.0/1113.0, 125.0/192.0, -2187.0/6784.0, 11.0/84.0, 0.0])
     sol5 = np.array([5179.0/57600.0, 0.0, 7571.0/16695.0, 393.0/640.0, -92097.0/339200.0, 187.0/2100.0, 1.0/40.0])
 
-    decoherence_exponents = np.zeros((nk,n,n), dtype=np.complex128)
+    decoherence_exponents = np.zeros((nk,n,n), dtype=complex128)
     for k in prange(nk):
         for i in range(n):
             for j in range(n):
@@ -576,8 +576,8 @@ def jit_step_lg_lvn_dp45(nk,t,dt,energy3d,overlap,neighbour_table,size,rho,Es_ca
             drho[i,k,:,:] += np.conj(drho[i,k,:,:].T)
         drho[i] = drho[i]*np.exp(cs[i]*dt*decoherence_exponents)
 
-    out5 = np.zeros((nk,n,m), dtype=np.complex128)
-    error = np.zeros((nk,n,m), dtype=np.complex128)
+    out5 = np.zeros((nk,n,m), dtype=complex128)
+    error = np.zeros((nk,n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]
@@ -603,7 +603,7 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
         Es[i,:] = np.dot(lattice_vectors.T,Es_cartesian[i,:])
     _,n,m = rho.shape
     nv = m
-    drho = np.zeros((n_cs,nk,n,m), dtype=np.complex128)
+    drho = np.zeros((n_cs,nk,n,m), dtype=complex128)
     cs = np.array([0.0,0.2,0.3,0.8,8.0/9.0,1.0,1.0])
     bs = np.zeros((n_cs,n_cs))
     bs[1,0] = 0.2
@@ -616,7 +616,7 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
     sol4 = np.array([35.0/384.0, 0.0, 500.0/1113.0, 125.0/192.0, -2187.0/6784.0, 11.0/84.0, 0.0])
     sol5 = np.array([5179.0/57600.0, 0.0, 7571.0/16695.0, 393.0/640.0, -92097.0/339200.0, 187.0/2100.0, 1.0/40.0])
 
-    decoherence_exponents = np.zeros((nk,n,n), dtype=np.complex128)
+    decoherence_exponents = np.zeros((nk,n,n), dtype=complex128)
     for i in range(n):
         for j in range(n):
             if i != j:
@@ -634,8 +634,8 @@ def jit_step_lg_lvn_dp45_constant_dephasing(nk,t,dt,energy3d,overlap,neighbour_t
             drho[i,k,:,:] += np.conj(drho[i,k,:,:].T)
         drho[i] = drho[i]*np.exp(cs[i]*dt*decoherence_exponents)
 
-    out5 = np.zeros((nk,n,m), dtype=np.complex128)
-    error = np.zeros((nk,n,m), dtype=np.complex128)
+    out5 = np.zeros((nk,n,m), dtype=complex128)
+    error = np.zeros((nk,n,m), dtype=complex128)
     for i in range(n_cs):
        out5 += dt*sol5[i]*drho[i]
        error += dt*(sol5[i]-sol4[i])*drho[i]

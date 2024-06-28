@@ -136,7 +136,7 @@ def read_wien2k(input_case, input_overlap=None,
         hdf5.create_dataset("overlap", data=overlap)
         hdf5.create_dataset("neighbour_table", data=nn_table)
     try:
-        momentum = np.zeros((nk,nb,nb,3), dtype=np.complex)
+        momentum = np.zeros((nk,nb,nb,3), dtype=complex)
         skip_lines = 2
         with open(input_momentum) as momentum_file:
             [next(momentum_file) for _ in range(skip_lines)]
@@ -180,8 +180,8 @@ def read_wien2k(input_case, input_overlap=None,
                     print(line0)
         dset_momentum = hdf5.create_dataset("momentum", data=momentum)
     except:
-        dset_momentum = hdf5.create_dataset("momentum", (nk,nb,nb,3), dtype=np.complex128)
-        momentum = np.zeros((nb,nb,3), dtype=np.complex)
+        dset_momentum = hdf5.create_dataset("momentum", (nk,nb,nb,3), dtype=complex128)
+        momentum = np.zeros((nb,nb,3), dtype=complex)
         with open(input_momentum) as momentum_file:
             skip_lines = 2
             [next(momentum_file) for _ in range(skip_lines)]

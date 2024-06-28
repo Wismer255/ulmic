@@ -7,7 +7,7 @@ def read_mmn(file_mmn,size,klist1d,klist3d,transpose=False):
         next(mmn)
         nb,nk,nn = map(int,next(mmn).split())
 
-        overlaps = np.zeros((nk,3,2,nb,nb), dtype=np.complex)
+        overlaps = np.zeros((nk,3,2,nb,nb), dtype=complex)
         assert(nk == len(klist3d.flatten()) )
 
         for i in range(nk):

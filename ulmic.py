@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
         klist1d = np.zeros((nkpts, 3))
         klist3d = np.zeros((nk_size), dtype=np.intp)
-        S = np.zeros((nk, 3, 2*nn, nb, nb), dtype=np.complex)
+        S = np.zeros((nk, 3, 2*nn, nb, nb), dtype=complex)
         energy = np.zeros((nk, nb))
         nn_table = np.zeros((nk, 3, 2*nn), dtype=np.intp)
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
 
 
         pair = PairDensity(calc=calc)
-        momentum = np.zeros((nkpts, nb, nb, 3), dtype=np.complex)
+        momentum = np.zeros((nkpts, nb, nb, 3), dtype=complex)
         for i in range(nkpts):
             #k = b1*calc.wfs.kd.bzk_kc[i][0] + b2*calc.wfs.kd.bzk_kc[i][1] +b3*calc.wfs.kd.bzk_kc[i][2]
             q_c = [0.0, 0.0, 0.0]

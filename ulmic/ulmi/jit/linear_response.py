@@ -38,7 +38,7 @@ def jit_linear_interband_response(omega, decoherence_rate,
         """
         nk = rho_diagonal.shape[0]
         nb = rho_diagonal.shape[1]
-        sigma = np.zeros((nk, 3, 3), dtype=complex128)
+        sigma = np.zeros((nk, 3, 3), dtype=np.complex128)
         max_broadening_fraction = 0.1
         # evaluate the contributions from momentum matrix elements
         for ik in prange(nk):

@@ -24,7 +24,7 @@ class StateManager(InitialState):
         self.initial_state = 'ground_state'
 
     def get_time_independent_decoherence_operator(self):
-        decoherence_exponents = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nb),dtype=complex128)
+        decoherence_exponents = np.zeros((self.medium.nk_local,self.medium.nb,self.medium.nb),dtype=np.complex128)
         for i in range(self.medium.nb):
             for j in range(self.medium.nb):
                 for k in range(self.medium.nk_eval):

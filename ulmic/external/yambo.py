@@ -34,7 +34,7 @@ def read_yambo(directory,size=None,out='out.hdf5',save='SAVE'):
     lattice = yambo_save.lat
     reciprocal_lattice = 2*np.pi*yambo_save.rlat
     spin_factor = yambo_save.spin_degen
-    momentum = np.rollaxis(yambo_dipoles.dipoles,1,4).astype(complex128)
+    momentum = np.rollaxis(yambo_dipoles.dipoles,1,4).astype(np.complex128)
 
     klist1d = np.zeros((nk, 3))
     for i in range(nk):

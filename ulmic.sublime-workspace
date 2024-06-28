@@ -748,7 +748,7 @@
 			"E_\\mathrm{i}",
 			"Fig.\\ ",
 			"\\",
-			"complex128",
+			"np.complex128",
 			"band_energies",
 			"cell_volume",
 			"spin_factor",

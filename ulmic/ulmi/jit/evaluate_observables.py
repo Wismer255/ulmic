@@ -7,7 +7,7 @@ import sys
 ##     if arg in flags:
 ##         flags[arg] = True
 
-#@jit('void(complex128[:,:,:],int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_current_jit_all(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,
                                     result_jk,result_j):
@@ -50,12 +50,12 @@ def evaluate_current_jit(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,re
     result_j[index,:] = -normalisation * np.sum(np.sum(result_jk, axis=-1), axis=-1)
 
 
-#@jit('void(complex128[:,:,:],int64,int64,complex128[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,np.complex128[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,volume,result_j):
     """ Evaluate the expectation value of the acceleration in the
         interaction picture using wave functions. """
-    energy3d = energy.astype(complex128)
+    energy3d = energy.astype(np.complex128)
     result_jk = np.empty((3, N_k), dtype=np.float64)
     normalisation = 1.0 / (nk_vol*volume)
     for k in prange(N_k):
@@ -71,7 +71,7 @@ def evaluate_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,volume
     result_j[index,:] = -normalisation * np.sum(result_jk, axis=1)
 
 
-#@jit('void(complex128[:,:,:],int64,int64,int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:],float64[:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:],float64[:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volume,
                                     result_q,result_n,result_pop):
@@ -90,7 +90,7 @@ def evaluate_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,v
     result_pop[index] = np.sum(np.sum(electron_number[:, nv:, :], axis=2), axis=0)
 
 
-#@jit('void(complex128[:,:,:],int64,int64,int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit
 def evaluate_energy_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volume,result_e):
     """ Evaluate the expectation value of the field-free
@@ -104,7 +104,7 @@ def evaluate_energy_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volu
     result_e[index] = np.sum(absorbed_energy) * normalisation
 
 
-#@jit('float64[:,:](complex128[:,:,:],float64,complex128[:,:,:,:,:],int64[:,:,:],complex128[:,:],int64,float64[:,:],int64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('float64[:,:](np.complex128[:,:,:],float64,np.complex128[:,:,:,:,:],int64[:,:,:],np.complex128[:,:],int64,float64[:,:],int64[:],float64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_covariant_current_jit(rho,time,S,table,energy3d,nk,lattice_vectors,nk_periodicity,volume):
     current = np.empty((nk,3))
@@ -141,8 +141,8 @@ def evaluate_covariant_current_jit(rho,time,S,table,energy3d,nk,lattice_vectors,
     return current/(4*np.pi*volume)
 
 
-##@jit('UniTuple(float64[:,:],2)(complex128[:,:,:],float64,complex128[:,:,:,:],complex128[:,:,:,:,:],int64[:,:,:],complex128[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
-#@jit('float64[:,:](complex128[:,:,:],float64,complex128[:,:,:,:],complex128[:,:,:,:,:],int64[:,:,:],complex128[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+##@jit('UniTuple(float64[:,:],2)(np.complex128[:,:,:],float64,np.complex128[:,:,:,:],np.complex128[:,:,:,:,:],int64[:,:,:],np.complex128[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('float64[:,:](np.complex128[:,:,:],float64,np.complex128[:,:,:,:],np.complex128[:,:,:,:,:],int64[:,:,:],np.complex128[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_current_using_berry(rho,time,momentum,S,table,energy,N_k,lattice_vectors,periodicity,klist3d,nk_vol,volume,nv,neighbor_order=1):
     term_current = np.empty((len(N_k),3), dtype=np.float64)
@@ -179,7 +179,7 @@ def evaluate_current_using_berry(rho,time,momentum,S,table,energy,N_k,lattice_ve
                     np.dot(np.linalg.inv(overlap_product),derivative_H))) ).real
             else:
                 VV,SS,UU = np.linalg.svd(overlap_product)
-                normalized_SS = np.ones(SS.shape, dtype=complex128)
+                normalized_SS = np.ones(SS.shape, dtype=np.complex128)
                 for q in range(len(SS)):
                     if SS[q] > 1e-20:
                         normalized_SS[q] = np.sqrt(1/SS[q])
@@ -192,7 +192,7 @@ def evaluate_current_using_berry(rho,time,momentum,S,table,energy,N_k,lattice_ve
 def evaluate_current_using_geometric_phase(rho,time,momentum,overlap,forward_neighbour_table,energy,nk_mesh,lattice_vectors,size,klist3d,nk_vol,volume,nv,neighbor_order=1,order=1):
     # Evaluate distributed covariant current to second order
     current_mixed_j1 = evaluate_current_using_berry(rho, time, momentum,
-            overlap, forward_neighbour_table, energy.astype(complex128), nk_mesh,
+            overlap, forward_neighbour_table, energy.astype(np.complex128), nk_mesh,
             lattice_vectors, size, klist3d, nk_vol, volume, nv, 1)
     if order == 1:
         mixed_j5 = (1/(2*np.pi*volume))*np.dot(lattice_vectors,
@@ -206,7 +206,7 @@ def evaluate_current_using_geometric_phase(rho,time,momentum,overlap,forward_nei
         current_mixed_j2 = evaluate_current_using_berry(rho,time,momentum,
                 overlap,
                 forward_neighbour_table,
-                energy.astype(complex128),nk_mesh,
+                energy.astype(np.complex128),nk_mesh,
                 lattice_vectors,
                 size,klist3d,
                 nk_vol,volume,nv,2)
@@ -217,7 +217,7 @@ def evaluate_current_using_geometric_phase(rho,time,momentum,overlap,forward_nei
         return mixed_j5
 
 #========================= Density matrix ======================================
-#@jit('void(complex128[:,:,:],int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_lvn_current_jit_all(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volume,
                                     result_jk,result_j):
@@ -247,10 +247,10 @@ def evaluate_lvn_current_jit(rho,index,energy3d,momentum3d,time,N_k,nk_vol,volum
     result_j[index, :] = -normalisation * np.sum(result_jk, axis=1)
 
 
-#@jit('void(complex128[:,:,:],int64,int64,complex128[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,np.complex128[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:,:,:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_lvn_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,volume,result_j):
-    energy3d = energy.astype(complex128)
+    energy3d = energy.astype(np.complex128)
     result_jk = np.empty((3,N_k), dtype=np.float64)
     normalisation = 1.0 / (nk_vol*volume)
     for k in prange(N_k):
@@ -265,7 +265,7 @@ def evaluate_lvn_acceleration_jit(rho,index,energy,momentum3d,time,N_k,nk_vol,vo
                 (np.dot(P_k,E_k) - np.dot(E_k,P_k)), rho[k])).real
     result_j[index, :] = -normalisation * np.sum(result_jk, axis=1)
 
-#@jit('void(complex128[:,:,:],int64,int64,int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:],float64[:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:],float64[:],float64[:,:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit
 def evaluate_lvn_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volume,
                                     result_q,result_n,result_pop):
@@ -283,7 +283,7 @@ def evaluate_lvn_electrons_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_v
     result_n[index] = excitation_number * ormalisation
     result_pop[index,:] = conduction_band_populations * normalisation
 
-#@jit('void(complex128[:,:,:],int64,int64,int64,int64,float64[:,:],complex128[:,:,:,:],float64,int64,int64,float64,float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('void(np.complex128[:,:,:],int64,int64,int64,int64,float64[:,:],np.complex128[:,:,:,:],float64,int64,int64,float64,float64[:])',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit
 def evaluate_lvn_energy_jit(rho,nb,nv,index,energy3d,momentum3d,time,N_k,nk_vol,volume,
                                     result_e):
@@ -307,10 +307,10 @@ def evaluate_adiabatic_corrections(time,medium,pulses):
         rho = np.zeros(1,1,1, dtype=complex)
         NAeff[i,:] = jit_get_correction(time[i],rho,A,energy,momentum,nk_vol,volume,nv,nk)
 
-#@jit('float64[:](float64,complex128[:,:,:],float64[:],float64[:,:],complex128[:,:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('float64[:](float64,np.complex128[:,:,:],float64[:],float64[:,:],np.complex128[:,:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,N_k):
-    rho00 = np.zeros_like(rho[0], dtype=complex128)
+    rho00 = np.zeros_like(rho[0], dtype=np.complex128)
     for i in range(nv):
         rho00[i,i] = 1.0
 
@@ -320,7 +320,7 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,N_k):
         v2 = v1.conj() # np.exp(-1j*time*energy3d[k,:])
         mask = np.outer(v1,v2)
         
-        Hk_dk = np.diag((energy3d[k]+ 0.5*np.dot(A,A)).astype(complex128))
+        Hk_dk = np.diag((energy3d[k]+ 0.5*np.dot(A,A)).astype(np.complex128))
         for i in range(3):
             Hk_dk += A[i]*momentum[k,:,:,i]
         eigval, eigvec = np.linalg.eigh(Hk_dk)
@@ -339,11 +339,11 @@ def jit_get_correction(time,rho,A,energy3d,momentum,nk_vol,volume,nv,N_k):
 
 
 
-#@jit('complex128[:,:](complex128[:,:,:],float64,complex128[:,:,:,:,:],int64[:,:,:],float64[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
+#@jit('np.complex128[:,:](np.complex128[:,:,:],float64,np.complex128[:,:,:,:,:],int64[:,:,:],float64[:,:],int64,float64[:,:],int64[:],int64[:,:,:],int64,float64,int64,int64)',nopython=True,nogil=True,cache=not flags['--no-cache'])
 @njit(parallel=True)
 def evaluate_angles_for_polarisation(rho,time,S,table,energy,N_k,lattice_vectors,periodicity,klist3d,nk_vol,volume,nv,neighbor_order=1):
     _,n,m = rho.shape
-    products = np.empty((len(N_k),3), dtype=complex128)
+    products = np.empty((len(N_k),3), dtype=np.complex128)
     if n == m:
         for k0 in prange(N_k):
             rho_k0_H = rho[k0,:,:].conj().T

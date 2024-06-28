@@ -180,7 +180,7 @@ def read_wien2k(input_case, input_overlap=None,
                     print(line0)
         dset_momentum = hdf5.create_dataset("momentum", data=momentum)
     except:
-        dset_momentum = hdf5.create_dataset("momentum", (nk,nb,nb,3), dtype=complex128)
+        dset_momentum = hdf5.create_dataset("momentum", (nk,nb,nb,3), dtype=np.complex128)
         momentum = np.zeros((nb,nb,3), dtype=complex)
         with open(input_momentum) as momentum_file:
             skip_lines = 2

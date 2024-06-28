@@ -70,6 +70,8 @@ class AnalyticalPulse:
             vector_potential += -self.variables['E0']*t*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             vector_potential += self.get_cos4_vector_potential(self.variables,t)
+        elif self.variables['envelope'] == 'cos8':
+            vector_potential += self.get_cos8_vector_potential(self.variables,t)
         elif self.variables['envelope'] == 'delta_spike':
             if t >= self.variables['delay']:
                 vector_potential += self.variables['A0'] * self.variables['polarisation_vector'].real
@@ -89,6 +91,8 @@ class AnalyticalPulse:
             electric_field += self.variables['E0']*self.variables['polarisation_vector'].real
         elif self.variables['envelope'] == 'cos4':
             electric_field += self.get_cos4_electric_field(self.variables,t)
+        elif self.variables['envelope'] == 'cos8':
+            electric_field += self.get_cos8_electric_field(self.variables,t)
         elif self.variables['envelope'] == 'delta_spike':
             if t == self.variables['delay'] and self.variables['A0'] != 0:
                 electric_field += np.finfo(np.float).max * self.variables['polarisation_vector'].real
@@ -204,7 +208,7 @@ class AnalyticalPulse:
     def get_cos4_vector_potential(self,pulse,time):
         E0 =  pulse['E0']
         omega = pulse['omega']
-        envelope_type = pulse['envelope']
+        # envelope_type = pulse['envelope']
         FWHM = pulse['FWHM']
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
@@ -221,7 +225,7 @@ class AnalyticalPulse:
     def get_cos4_electric_field(self,pulse,time):
         E0 =  pulse['E0']
         omega = pulse['omega']
-        envelope_type = pulse['envelope']
+        # envelope_type = pulse['envelope']
         FWHM = pulse['FWHM']
         polarisation_vector = pulse['polarisation_vector']
         delay = pulse['delay']
@@ -240,3 +244,39 @@ class AnalyticalPulse:
                 cos_term * np.cos(omega*t+cep))
         return H * field_cos4 * polarisation_vector
 
+    def get_cos8_vector_potential(self,pulse,time):
+        E0 =  pulse['E0']
+        omega = pulse['omega']
+        # envelope_type = pulse['envelope']
+        FWHM = pulse['FWHM']
+        polarisation_vector = pulse['polarisation_vector']
+        delay = pulse['delay']
+        cep = pulse['cep']
+        if np.iscomplexobj(polarisation_vector):
+            cep = cep + np.angle(polarisation_vector)
+            polarisation_vector = np.abs(polarisation_vector)
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.0625)))
+        t = time - delay
+        H=np.heaviside(tau_l-np.abs(t),0.5)
+        pulse_cos8 = -E0/omega * (np.cos(np.pi*t/(2*tau_l)))**8 * np.sin(omega*t+cep)
+        return H*pulse_cos8*polarisation_vector
+
+    def get_cos8_electric_field(self,pulse,time):
+        E0 =  pulse['E0']
+        omega = pulse['omega']
+        # envelope_type = pulse['envelope']
+        FWHM = pulse['FWHM']
+        polarisation_vector = pulse['polarisation_vector']
+        delay = pulse['delay']
+        cep = pulse['cep']
+        if np.iscomplexobj(polarisation_vector):
+            cep = cep + np.angle(polarisation_vector)
+            polarisation_vector = np.abs(polarisation_vector)
+        tau_l = FWHM*np.pi/(4*np.arccos(2**(-0.0625)))
+        t = time - delay
+        theta = np.pi*t / (2*tau_l)
+        H = np.heaviside(tau_l-np.abs(t), 0.5)
+        field_cos8 = E0 * np.cos(theta)**8 * \
+            (np.cos(omega*t+cep) -
+             4*np.pi/(omega*tau_l) * np.tan(theta) * np.sin(omega*t+cep))
+        return H * field_cos8 * polarisation_vector
